@@ -19,7 +19,7 @@ import java.util.UUID;
 public class GameCategoryService {
 
     @Autowired
-    @Qualifier("game_category_repo")
+    @Qualifier("game_category_repository")
     private GameCategoryRepository gameCategoryRepository;
 
     @Autowired
@@ -63,14 +63,10 @@ public class GameCategoryService {
         return results.stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
-    public List<MGameCategory> getByTitle(String title, Pageable pageable) {
-        try {
-            List<MGameCategory> results = gameCategoryConverter
-                    .parseToList(gameCategoryRepository.findByTitleContains(title, pageable).getContent());
-            return results.stream().filter(item -> item.getDeletedAt() == null).toList();
-        } catch (Exception e) {
-            return null;
-        }
+    public List<MGameCategory> getByName(String name, Pageable pageable) {
+        List<MGameCategory> results = gameCategoryConverter
+                .parseToList(gameCategoryRepository.findByNameContains(name, pageable).getContent());
+        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
 }

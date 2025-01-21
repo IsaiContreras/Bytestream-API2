@@ -10,14 +10,14 @@ import org.springframework.stereotype.Repository;
 import java.io.Serializable;
 import java.util.UUID;
 
-@Repository("game_category_repo")
+@Repository("game_category_repository")
 public interface GameCategoryRepository
         extends JpaRepository<GameCategory, Serializable>, PagingAndSortingRepository<GameCategory, Serializable>
 {
 
     public abstract GameCategory findById(UUID id);
 
-    public abstract Page<GameCategory> findByTitleContains(String title, Pageable pageable);
+    public abstract Page<GameCategory> findByNameContains(String name, Pageable pageable);
 
     public abstract Page<GameCategory> findAll(Pageable pagable);
 

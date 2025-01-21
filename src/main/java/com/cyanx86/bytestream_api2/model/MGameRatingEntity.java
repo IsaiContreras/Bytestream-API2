@@ -21,6 +21,8 @@ public class MGameRatingEntity {
     private String location;
     private String description;
 
+    private final List<String> logoURIList = new ArrayList<>();
+
     private Date createdAt;
     private Date updatedAt;
     private Date deletedAt;
@@ -40,7 +42,10 @@ public class MGameRatingEntity {
     public MGameRatingEntity(GameRatingEntity gameRatingEntity) {
         this.id = gameRatingEntity.getId();
         this.name = gameRatingEntity.getName();
+        this.longName = gameRatingEntity.getLongName();
         this.location = gameRatingEntity.getLocation();
+        this.description = gameRatingEntity.getDescription();
+
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
         this.deletedAt = gameRatingEntity.getDeletedAt();
@@ -56,7 +61,10 @@ public class MGameRatingEntity {
     public MGameRatingEntity(MGameRatingEntity gameRatingEntity) {
         this.id = gameRatingEntity.getId();
         this.name = gameRatingEntity.getName();
+        this.longName = gameRatingEntity.getLongName();
         this.location = gameRatingEntity.getLocation();
+        this.description = gameRatingEntity.getDescription();
+
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
         this.deletedAt = gameRatingEntity.getDeletedAt();
@@ -103,6 +111,9 @@ public class MGameRatingEntity {
     }
     public Date getDeletedAt() {
         return deletedAt;
+    }
+    public List<String> getLogoURIList() {
+        return logoURIList;
     }
 
     public List<MGameRating> getGameRatings() {

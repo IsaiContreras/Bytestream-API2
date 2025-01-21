@@ -21,23 +21,17 @@ public class GameCategoryController {
     private GameCategoryService gameCategoryService;
 
     @PostMapping("/new")
-    public boolean addNewGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
-    ) {
+    public boolean addNewGameCategory(@RequestBody @Validated GameCategory gameCategory) {
         return this.gameCategoryService.create(gameCategory);
     }
 
-    @PutMapping("/update")
-    public boolean updateGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
-    ) {
+    @PatchMapping("/update")
+    public boolean updateGameCategory(@RequestBody @Validated GameCategory gameCategory) {
         return this.gameCategoryService.update(gameCategory);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public boolean deleteGameCategory(
-            @PathVariable("id") UUID id
-    ) {
+    @DeleteMapping("/delete")
+    public boolean deleteGameCategory(@RequestParam("id") UUID id) {
         return this.gameCategoryService.delete(id);
     }
 
@@ -46,12 +40,12 @@ public class GameCategoryController {
         return this.gameCategoryService.getAll(pageable);
     }
 
-    @GetMapping("/get/{title}")
-    public List<MGameCategory> getCategoriesByTitle(
-            @PathVariable("title") String title,
+    @GetMapping("/byname")
+    public List<MGameCategory> getByName(
+            @RequestParam("name") String name,
             Pageable pageable
     ) {
-        return this.gameCategoryService.getByTitle(title, pageable);
+        return this.gameCategoryService.getByName(name, pageable);
     }
 
 }

@@ -22,16 +22,17 @@ public class GameRatingEntity implements Serializable {
     @Column(name="entity_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
     private UUID id;
 
-    @Column(name="name", nullable=false, length=7)
+
+    @Column(name="name", nullable=false, length=15)
     private String name;
 
-    @Column(name="long_name", nullable=false, length=31)
+    @Column(name="long_name", nullable=false, length=127)
     private String longName;
 
     @Column(name="location", nullable=false, length=511)
     private String location;
 
-    @Column(name="description", nullable=false, length=255)
+    @Column(name="description", nullable=false, length=511)
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)
@@ -77,6 +78,10 @@ public class GameRatingEntity implements Serializable {
         this.longName = longName;
         this.location = location;
         this.description = description;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
     }
 
     public UUID getId() {

@@ -22,8 +22,8 @@ public class GameCategory implements Serializable {
     @Column(name="catego_id") @Id @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
-    @Column(name="title", nullable=false, length=31)
-    private String title;
+    @Column(name="name", nullable=false, length=31)
+    private String name;
 
     @Column(name="created_at", nullable=false, updatable=false)
     @Temporal(TemporalType.TIMESTAMP) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) @CreationTimestamp
@@ -50,15 +50,15 @@ public class GameCategory implements Serializable {
     public GameCategory() {}
     public GameCategory(GameCategory gameCategory) {
         this.id = gameCategory.getId();
-        this.title = gameCategory.getTitle();
+        this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
 
         this.games = gameCategory.getGames();
     }
-    public GameCategory(String title) {
-        this.title = title;
+    public GameCategory(String name) {
+        this.name = name;
     }
 
     public void setDeletedAt(Date deletedAt) { this.deletedAt = deletedAt; }
@@ -66,8 +66,8 @@ public class GameCategory implements Serializable {
     public UUID getId() {
         return id;
     }
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
     public Date getCreatedAt() {
         return createdAt;

@@ -15,7 +15,7 @@ public class MGameCategory {
     // -- PRIVATE --
     // Data
     private UUID id;
-    private String title;
+    private String name;
 
     private Date createdAt;
     private Date updatedAt;
@@ -34,7 +34,7 @@ public class MGameCategory {
     public MGameCategory() {}
     public MGameCategory(GameCategory gameCategory) {
         this.id = gameCategory.getId();
-        this.title = gameCategory.getTitle();
+        this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
@@ -45,26 +45,26 @@ public class MGameCategory {
     }
     public MGameCategory(MGameCategory gameCategory) {
         this.id = gameCategory.getId();
-        this.title = gameCategory.getTitle();
+        this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
 
         games = gameCategory.getGames();
     }
-    public MGameCategory(String title) {
-        this.title = title;
+    public MGameCategory(String name) {
+        this.name = name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitle(String name) {
+        this.name = name;
     }
 
     public UUID getId() {
         return id;
     }
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
     public Date getCreatedAt() {
         return createdAt;
