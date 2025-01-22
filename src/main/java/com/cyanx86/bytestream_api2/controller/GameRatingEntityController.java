@@ -60,14 +60,4 @@ public class GameRatingEntityController {
         return ratingEntityService.getByName(name);
     }
 
-    @GetMapping("/media/{name}/{resolution}/{extension}")
-    public ResponseEntity<Resource> getImage(
-        @PathVariable("name") String name,
-        @PathVariable("resolution") String resolution,
-        @PathVariable("extension") String extension
-    ) {
-        return ratingEntityService.getImage(name, extension, resolution);
-    }
-
-
 }

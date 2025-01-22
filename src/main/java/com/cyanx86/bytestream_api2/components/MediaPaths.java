@@ -22,10 +22,11 @@ public class MediaPaths {
         this.environment = environment;
     }
 
-    public Path getPathOfEntity(@NotNull MediaEntity mediaEntity, @NotNull String folder) {
-        return Path.of(Objects.requireNonNull(environment.getProperty(MediaEntity.ROOT.getPath())))
-                .resolve(mediaEntity.getPath())
-                .resolve(folder);
+    public Path getPathOfEntity(@NotNull MediaEntity mediaEntity, String folder) {
+        Path result = Path.of(Objects.requireNonNull(environment.getProperty(MediaEntity.ROOT.getPath())))
+                .resolve(mediaEntity.getPath());
+        if (folder != null) result = result.resolve(folder);
+        return result;
     }
 
 }

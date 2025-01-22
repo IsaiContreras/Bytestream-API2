@@ -5,10 +5,7 @@ import com.cyanx86.bytestream_api2.components.ImageResourceManager;
 import com.cyanx86.bytestream_api2.components.MediaPaths;
 import com.cyanx86.bytestream_api2.converter.GameRatingEntityConverter;
 import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
-import com.cyanx86.bytestream_api2.misc.DataConverter;
-import com.cyanx86.bytestream_api2.misc.FilenameFormat;
-import com.cyanx86.bytestream_api2.misc.ImageResolution;
-import com.cyanx86.bytestream_api2.misc.MediaEntity;
+import com.cyanx86.bytestream_api2.misc.*;
 import com.cyanx86.bytestream_api2.model.MGameRatingEntity;
 import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
 import jakarta.servlet.ServletContext;
@@ -17,16 +14,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.xml.crypto.Data;
 import java.awt.image.BufferedImage;
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -126,47 +117,6 @@ public class GameRatingEntityService {
         return mRatingEntity;
     }
 
-    public ResponseEntity<Resource> getImage(String name, String extension, String resolution) {
-        ImageResolution imageResolution = Arrays.stream(ImageResolution.values())
-                .filter(res -> res.getSuffix().equals(resolution))
-                .findFirst()
-                .orElse(null);
-        if (imageResolution == null)
-            return ResponseEntity.notFound().build();
-
-        GameRatingEntity gameRatingEntity = ratingEntityRepository.findByName(name);
-        if (gameRatingEntity == null)
-            return ResponseEntity.notFound().build();
-
-        try {
-            Path filepath = mediaPaths
-                    .getPathOfEntity(MediaEntity.GAME_RATING_ENTITIES, gameRatingEntity.getId().toString())
-                    .resolve(filenameFormatter.formatFilename(
-                            FilenameFormat.ENTITY_FILE_FORMAT,
-                            new String[]{gameRatingEntity.getName(), imageResolution.getSuffix(), extension}
-                    ));
-            Resource resource = new UrlResource(filepath.toUri());
-
-            if (resource.exists() || resource.isReadable()) {
-                String contentType = context.getMimeType(filepath.toString());
-                if (contentType == null)
-                    contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(contentType))
-                        .header(
-                                HttpHeaders.CONTENT_DISPOSITION,
-                                "inline; filename=\"" + resource.getFilename() + "\""
-                        )
-                        .body(resource);
-            }
-            else
-                return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
-    }
-
     private boolean uploadEntityLogo(MultipartFile image, UUID id, String name) {
         BufferedImage originalImage;
         try {
@@ -202,13 +152,27 @@ public class GameRatingEntityService {
 
     private void getEntityLogo(List<MGameRatingEntity> ratingEntityList) {
         for (MGameRatingEntity ratingEntityItem : ratingEntityList) {
-            ImageResolution[] resolutionsValues = ImageResolution.values();
-            for (int i = 1; i < resolutionsValues.length; i++) {
-                String finalURI = InetAddress.getLoopbackAddress().getHostAddress() + ":" +
-                        environment.getProperty("server.port") + "/rating_entity/media/" +
-                        ratingEntityItem.getName() + "/" + resolutionsValues[i].getSuffix() + "/" +
-                        "png";
-                ratingEntityItem.getLogoURIList().add(finalURI);
+            ImageResolution[] resolutionValues = ImageResolution.values();
+            for (int i = 1; i < resolutionValues.length; i++) {
+                if (
+                        ImageResolution.hasFlag(logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
+                        ImageResolution.hasFlag(logoResolutionConfiguration, resolutionValues[i])
+                ) {
+                    String filename = filenameFormatter.formatFilename(
+                            FilenameFormat.ENTITY_FILE_FORMAT,
+                            new String[]{
+                                    ratingEntityItem.getName(),
+                                    resolutionValues[i].getSuffix(),
+                                    "png"
+                            }
+                    );
+                    String finalURI = InetAddress.getLoopbackAddress().getHostAddress() + ":" +
+                            environment.getProperty("server.port") +
+                            StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.getStaticPath() +
+                            ratingEntityItem.getId().toString() + "/" +
+                            filename;
+                    ratingEntityItem.getLogoURIList().add(finalURI);
+                }
             }
         }
     }
