@@ -15,9 +15,9 @@ public class MGameRating {
     // -- PRIVATE --
     // Data
     private UUID id;
+    private String name;
     private String title;
     private String description;
-    private String logoURI;
 
     private Date createdAt;
     private Date updatedAt;
@@ -37,9 +37,9 @@ public class MGameRating {
     public MGameRating() {}
     public MGameRating(GameRating gameRating) {
         this.id = gameRating.getId();
+        this.name = gameRating.getName();
         this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
-        this.logoURI = gameRating.getLogoURI();
         this.createdAt = gameRating.getCreatedAt();
         this.updatedAt = gameRating.getUpdatedAt();
         this.deletedAt = gameRating.getDeletedAt();
@@ -52,9 +52,9 @@ public class MGameRating {
     }
     public MGameRating(MGameRating gameRating) {
         this.id = gameRating.getId();
+        this.name = gameRating.getName();
         this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
-        this.logoURI = gameRating.getLogoURI();
         this.createdAt = gameRating.getCreatedAt();
         this.updatedAt = gameRating.getUpdatedAt();
         this.deletedAt = gameRating.getDeletedAt();
@@ -62,33 +62,33 @@ public class MGameRating {
         this.gameRatingEntity = gameRating.getGameRatingEntity();
         games = gameRating.getGames();
     }
-    public MGameRating(String title, String description, String logoURI) {
+    public MGameRating(String name, String title, String description, String logoURI) {
+        this.name = name;
         this.title = title;
         this.description = description;
-        this.logoURI = logoURI;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
     public void setTitle(String title) {
         this.title = title;
     }
     public void setDescription(String description) {
         this.description = description;
     }
-    public void setLogoURI(String logoURI) {
-        this.logoURI = logoURI;
-    }
 
     public UUID getId() {
         return id;
+    }
+    public String getName() {
+        return name;
     }
     public String getTitle() {
         return title;
     }
     public String getDescription() {
         return description;
-    }
-    public String getLogoURI() {
-        return logoURI;
     }
     public Date getCreatedAt() {
         return createdAt;

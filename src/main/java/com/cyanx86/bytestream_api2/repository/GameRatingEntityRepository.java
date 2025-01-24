@@ -15,6 +15,7 @@ public interface GameRatingEntityRepository
         extends JpaRepository<GameRatingEntity, Serializable>, PagingAndSortingRepository<GameRatingEntity, Serializable>
 {
 
+    // -- [[ METHODS ]] --
     public abstract GameRatingEntity findById(UUID id);
 
     public abstract GameRatingEntity findByName(String name);

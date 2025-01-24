@@ -27,6 +27,17 @@ import java.util.List;
 @Service("game_rating_entity_service")
 public class GameRatingEntityService {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Server Environment Resources
+    @Autowired
+    private ServletContext context;
+
+    @Autowired
+    private Environment environment;
+
+    // Entity Components
     @Autowired
     @Qualifier("game_rating_entity_repository")
     private GameRatingEntityRepository ratingEntityRepository;
@@ -35,32 +46,92 @@ public class GameRatingEntityService {
     @Qualifier("game_rating_entity_converter")
     private GameRatingEntityConverter ratingEntityConverter;
 
+    // Static Resource Management Components
     @Autowired
-    private ServletContext context;
-
-    private Environment environment;
+    @Qualifier("image_resource_manager_component")
+    private ImageResourceManager imageResourceManager;
 
     @Autowired
     @Qualifier("media_paths_component")
     private MediaPaths mediaPaths;
 
     @Autowired
-    @Qualifier("image_resource_manager_component")
-    private ImageResourceManager imageResourceManager;
-
-    @Autowired
     @Qualifier("filename_formatter_component")
     private FilenameFormatter filenameFormatter;
 
-    @Autowired
-    public GameRatingEntityService(Environment environment) {
-        this.environment = environment;
-    }
-
-    private int logoResolutionConfiguration = ImageResolution.ALL_RESOLUTIONS_VALUE;
-
+    // Class Components
     private static final Log logger = LogFactory.getLog(GameRatingEntityService.class);
 
+    private final int logoResolutionConfiguration = ImageResolution.ALL_RESOLUTIONS_VALUE;
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+    private boolean uploadEntityLogo(MultipartFile image, UUID id, String name) {
+        BufferedImage originalImage;
+        try {
+            originalImage = DataConverter.byteArrayToImage(image.getBytes());
+        } catch (Exception e) { return false; }
+
+        BufferedImage[] rescaledImages;
+        try {
+            rescaledImages = ImageResourceManager.getResizedImageInstances(
+                    originalImage,
+                    this.logoResolutionConfiguration
+            );
+        } catch (Exception e) { return false; }
+
+        String extension = Objects.requireNonNull(image.getContentType()).split("/")[1];
+        Path storageDestination = mediaPaths.getPathOfEntity(MediaEntity.GAME_RATING_ENTITIES, id.toString());
+
+        for (BufferedImage rescaledItem : rescaledImages) {
+            String filename = filenameFormatter.formatFilename(
+                    FilenameFormat.ENTITY_FILE_FORMAT,
+                    new String[]{
+                            name,
+                            (rescaledItem.getWidth() == originalImage.getWidth()) ?
+                                    "full" : rescaledItem.getWidth() + "w",
+                            extension
+                    }
+            );
+            if (!ImageResourceManager.storeFile(storageDestination, filename, rescaledItem, extension))
+                return false;
+        }
+        return true;
+    }
+
+    private void getEntityLogo(List<MGameRatingEntity> ratingEntityList) {
+        for (MGameRatingEntity ratingEntityItem : ratingEntityList) {
+            ImageResolution[] resolutionValues = ImageResolution.values();
+
+            for (int i = 1; i < resolutionValues.length; i++) {
+                if (
+                        ImageResolution.hasFlag(logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
+                                ImageResolution.hasFlag(logoResolutionConfiguration, resolutionValues[i])
+                ) {
+                    String filename = filenameFormatter.formatFilename(
+                            FilenameFormat.ENTITY_FILE_FORMAT,
+                            new String[]{
+                                    ratingEntityItem.getName(),
+                                    resolutionValues[i].getSuffix(),
+                                    "png"
+                            }
+                    );
+
+                    String finalURI = InetAddress.getLoopbackAddress().getHostAddress() + ":" +
+                            environment.getProperty("server.port") +
+                            StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.getStaticPath() +
+                            ratingEntityItem.getId().toString() + "/" +
+                            filename;
+                    ratingEntityItem.getLogoURIList().add(finalURI);
+                }
+            }
+        }
+    }
+
+    // -- PUBLIC --
     public boolean create(GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
         GameRatingEntity newItem = null;
         try {
@@ -115,66 +186,6 @@ public class GameRatingEntityService {
         MGameRatingEntity mRatingEntity = new MGameRatingEntity(queriedRatingEntity);
         this.getEntityLogo(List.of(mRatingEntity));
         return mRatingEntity;
-    }
-
-    private boolean uploadEntityLogo(MultipartFile image, UUID id, String name) {
-        BufferedImage originalImage;
-        try {
-            originalImage = DataConverter.byteArrayToImage(image.getBytes());
-        } catch (Exception e) { return false; }
-
-        BufferedImage[] rescaledImages;
-        try {
-            rescaledImages = ImageResourceManager.getResizedImageInstances(
-                    originalImage,
-                    this.logoResolutionConfiguration
-            );
-        } catch (Exception e) { return false; }
-
-        String extension = Objects.requireNonNull(image.getContentType()).split("/")[1];
-        Path storageDestination = mediaPaths.getPathOfEntity(MediaEntity.GAME_RATING_ENTITIES, id.toString());
-
-        for (BufferedImage rescaledItem : rescaledImages) {
-            String filename = filenameFormatter.formatFilename(
-                    FilenameFormat.ENTITY_FILE_FORMAT,
-                    new String[]{
-                            name,
-                            (rescaledItem.getWidth() == originalImage.getWidth()) ?
-                                    "full" : rescaledItem.getWidth() + "w",
-                            extension
-                    }
-            );
-            if (!ImageResourceManager.storeFile(storageDestination, filename, rescaledItem, extension))
-                return false;
-        }
-        return true;
-    }
-
-    private void getEntityLogo(List<MGameRatingEntity> ratingEntityList) {
-        for (MGameRatingEntity ratingEntityItem : ratingEntityList) {
-            ImageResolution[] resolutionValues = ImageResolution.values();
-            for (int i = 1; i < resolutionValues.length; i++) {
-                if (
-                        ImageResolution.hasFlag(logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
-                        ImageResolution.hasFlag(logoResolutionConfiguration, resolutionValues[i])
-                ) {
-                    String filename = filenameFormatter.formatFilename(
-                            FilenameFormat.ENTITY_FILE_FORMAT,
-                            new String[]{
-                                    ratingEntityItem.getName(),
-                                    resolutionValues[i].getSuffix(),
-                                    "png"
-                            }
-                    );
-                    String finalURI = InetAddress.getLoopbackAddress().getHostAddress() + ":" +
-                            environment.getProperty("server.port") +
-                            StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.getStaticPath() +
-                            ratingEntityItem.getId().toString() + "/" +
-                            filename;
-                    ratingEntityItem.getLogoURIList().add(finalURI);
-                }
-            }
-        }
     }
 
 }

@@ -17,25 +17,16 @@ public class Game implements Serializable {
 
     // -- [[ ATTRIBUTES ]] --
 
-    // -- PRIVATE
+    // -- PRIVATE --
     // Columns
     @Column(name="game_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
     private UUID id;
 
-    @Column(name="codename", nullable = false, length=63)
-    private String codename;
+    @Column(name="name", nullable = false, length=63)
+    private String name;
 
     @Column(name="title", nullable=false, length=63)
     private String title;
-
-    @Column(name="cover_art", length=511)
-    private String coverArtURI;
-
-    @Column(name="logo_art", length=511)
-    private String logoArtURI;
-
-    @Column(name="landscape_art", length=511)
-    private String landscapeArtURI;
 
     @Column(name="synopsis", nullable=false, length=1023)
     private String synopsis;
@@ -61,21 +52,18 @@ public class Game implements Serializable {
     @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="games")
     private List<GameRatingDescriptor> gameRatingDescriptors;
 
-    // -- PUBLIC
+    // -- PUBLIC --
 
     // -- [[ METHODS ]] --
 
-    // -- PRIVATE
+    // -- PRIVATE --
 
-    // -- PUBLIC
+    // -- PUBLIC --
     public Game() {}
     public Game(Game game) {
         this.id = game.getId();
+        this.name = game.getName();
         this.title = game.getTitle();
-        this.codename = game.getCodename();
-        this.coverArtURI = game.getCoverArtURI();
-        this.logoArtURI = game.getLogoArtURI();
-        this.landscapeArtURI = game.getLandscapeArtURI();
         this.synopsis = game.getSynopsis();
         this.createdAt = game.getCreatedAt();
         this.updatedAt = game.getUpdatedAt();
@@ -85,33 +73,18 @@ public class Game implements Serializable {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public Game(
-            String title, String codename, String coverArtURI,
-            String logoArtURI, String landscapeArtURI, String synopsis)
-    {
+    public Game(String name, String title, String synopsis) {
+        this.name = name;
         this.title = title;
-        this.codename = codename;
-        this.coverArtURI = coverArtURI;
-        this.logoArtURI = logoArtURI;
-        this.landscapeArtURI = landscapeArtURI;
         this.synopsis = synopsis;
     }
 
     public UUID getId() {
         return id;
     }
+    public String getName() { return name; }
     public String getTitle() {
         return title;
-    }
-    public String getCodename() { return codename; }
-    public String getCoverArtURI() {
-        return coverArtURI;
-    }
-    public String getLogoArtURI() {
-        return logoArtURI;
-    }
-    public String getLandscapeArtURI() {
-        return landscapeArtURI;
     }
     public String getSynopsis() {
         return synopsis;

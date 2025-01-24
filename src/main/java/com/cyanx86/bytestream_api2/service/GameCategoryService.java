@@ -18,6 +18,10 @@ import java.util.UUID;
 @Service("game_category_service")
 public class GameCategoryService {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Entity Components
     @Autowired
     @Qualifier("game_category_repository")
     private GameCategoryRepository gameCategoryRepository;
@@ -26,8 +30,16 @@ public class GameCategoryService {
     @Qualifier("game_category_converter")
     private GameCategoryConverter gameCategoryConverter;
 
+    // Class Components
     private static final Log logger = LogFactory.getLog(GameCategoryService.class);
 
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public boolean create(GameCategory gameCategory) {
         try {
             gameCategoryRepository.save(gameCategory);

@@ -10,6 +10,17 @@ import java.util.List;
 @Component("game_category_converter")
 public class GameCategoryConverter {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public List<MGameCategory> parseToList(List<GameCategory> gameCategories) {
         List<MGameCategory> result = new ArrayList<>();
 

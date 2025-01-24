@@ -18,14 +18,27 @@ import java.util.Objects;
 @Component("image_resource_manager_component")
 public class ImageResourceManager {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public static boolean storeFile(
             Path destination, String filename, ByteArrayInputStream filestream
     ) {
         try {
             if (!Files.exists(destination))
                 Files.createDirectories(destination);
+
             destination = destination.resolve(filename);
             Files.copy(filestream, destination, StandardCopyOption.REPLACE_EXISTING);
+
             return true;
         } catch (Exception e) { return false; }
     }
@@ -36,12 +49,14 @@ public class ImageResourceManager {
         try {
             if (!Files.exists(destination))
                 Files.createDirectories(destination);
+
             destination = destination.resolve(filename);
             Files.copy(
                     Objects.requireNonNull(DataConverter.imageToByteArrayInputStream(image, extension)),
                     destination,
                     StandardCopyOption.REPLACE_EXISTING
             );
+
             return true;
         } catch (Exception e) { return false; }
     }

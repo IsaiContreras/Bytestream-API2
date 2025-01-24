@@ -15,6 +15,7 @@ public interface GameCategoryRepository
         extends JpaRepository<GameCategory, Serializable>, PagingAndSortingRepository<GameCategory, Serializable>
 {
 
+    // -- [[ METHODS ]] --
     public abstract GameCategory findById(UUID id);
 
     public abstract Page<GameCategory> findByNameContains(String name, Pageable pageable);

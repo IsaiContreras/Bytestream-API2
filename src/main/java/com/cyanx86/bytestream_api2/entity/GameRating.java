@@ -22,14 +22,14 @@ public class GameRating implements Serializable {
     @Column(name="rating_id") @Id @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name="name", nullable = false, length=31)
+    private String name;
+
     @Column(name="title", nullable=false, length=31)
     private String title;
 
     @Column(name="description", nullable=false, length=31)
     private String description;
-
-    @Column(name="logo", nullable=false)
-    private String logoURI;
 
     @Column(name="created_at", nullable = false, updatable=false)
     @Temporal(TemporalType.TIMESTAMP) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) @CreationTimestamp
@@ -60,6 +60,7 @@ public class GameRating implements Serializable {
     public GameRating() {}
     public GameRating(GameRating gameRating) {
         this.id = gameRating.getId();
+        this.name = gameRating.getName();
         this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
         this.createdAt = gameRating.getCreatedAt();
@@ -69,23 +70,21 @@ public class GameRating implements Serializable {
         gameRatingEntity = gameRating.getGameRatingEntity();
         games = gameRating.getGames();
     }
-    public GameRating(String title, String description, String logoURI) {
+    public GameRating(String name, String title, String description) {
+        this.name = name;
         this.title = title;
         this.description = description;
-        this.logoURI = logoURI;
     }
 
     public UUID getId() {
         return id;
     }
+    public String getName() { return name; }
     public String getTitle() {
         return title;
     }
     public String getDescription() {
         return description;
-    }
-    public String getLogoURI() {
-        return logoURI;
     }
     public Date getCreatedAt() {
         return createdAt;

@@ -22,6 +22,9 @@ public class GameRatingDescriptor implements Serializable {
     @Column(name="r_descriptor_id") @Id @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
+    @Column(name="name", nullable=false, length=31)
+    private String name;
+
     @Column(name="title", nullable=false, length=31)
     private String title;
 
@@ -57,6 +60,7 @@ public class GameRatingDescriptor implements Serializable {
     public GameRatingDescriptor() {}
     public GameRatingDescriptor(GameRatingDescriptor gameRatingDescriptor) {
         this.id = gameRatingDescriptor.getId();
+        this.name = gameRatingDescriptor.getName();
         this.title = gameRatingDescriptor.getTitle();
         this.description = gameRatingDescriptor.getDescription();
         this.createdAt = gameRatingDescriptor.getCreatedAt();
@@ -66,7 +70,8 @@ public class GameRatingDescriptor implements Serializable {
         this.gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
         this.games = gameRatingDescriptor.getGames();
     }
-    public GameRatingDescriptor(String title, String description) {
+    public GameRatingDescriptor(String name, String title, String description) {
+        this.name = name;
         this.title = title;
         this.description = description;
     }
@@ -74,6 +79,7 @@ public class GameRatingDescriptor implements Serializable {
     public UUID getId() {
         return id;
     }
+    public String getName() { return name; }
     public String getTitle() {
         return title;
     }

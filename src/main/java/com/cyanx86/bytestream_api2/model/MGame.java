@@ -18,10 +18,7 @@ public class MGame {
     // Data
     private UUID id;
     private String title;
-    private String codename;
-    private String coverArtURI;
-    private String logoArtURI;
-    private String landscapeArtURI;
+    private String name;
     private String synopsis;
 
     private Date createdAt;
@@ -45,10 +42,7 @@ public class MGame {
     public MGame(Game game) {
         this.id = game.getId();
         this.title = game.getTitle();
-        this.codename = game.getCodename();
-        this.coverArtURI = game.getCoverArtURI();
-        this.logoArtURI = game.getLogoArtURI();
-        this.landscapeArtURI = game.getLandscapeArtURI();
+        this.name = game.getName();
         this.synopsis = game.getSynopsis();
 
         this.createdAt = game.getCreatedAt();
@@ -69,11 +63,8 @@ public class MGame {
     }
     public MGame(MGame game) {
         this.id = game.getId();
+        this.name = game.getName();
         this.title = game.getTitle();
-        this.codename = game.getCodename();
-        this.coverArtURI = game.getCoverArtURI();
-        this.logoArtURI = game.getLogoArtURI();
-        this.landscapeArtURI = game.getLandscapeArtURI();
         this.synopsis = game.getSynopsis();
 
         this.createdAt = game.getCreatedAt();
@@ -84,30 +75,15 @@ public class MGame {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public MGame(
-            String title, String codename, String coverArtURI,
-            String logoArtURI, String landscapeArtURI, String synopsis)
-    {
+    public MGame(String name, String title, String synopsis) {
+        this.name = name;
         this.title = title;
-        this.codename = codename;
-        this.coverArtURI = coverArtURI;
-        this.logoArtURI = logoArtURI;
-        this.landscapeArtURI = landscapeArtURI;
         this.synopsis = synopsis;
     }
 
+    public void setName(String name) { this.name = name; }
     public void setTitle(String title) {
         this.title = title;
-    }
-    public void setCodename(String codename) { this.codename = codename; }
-    public void setCoverArtURI(String coverArtURI) {
-        this.coverArtURI = coverArtURI;
-    }
-    public void setLogoArtURI(String logoArtURI) {
-        this.logoArtURI = logoArtURI;
-    }
-    public void setLandscapeArtURI(String landscapeArtURI) {
-        this.landscapeArtURI = landscapeArtURI;
     }
     public void setSynopsis(String synopsis) {
         this.synopsis = synopsis;
@@ -122,18 +98,9 @@ public class MGame {
     public UUID getId() {
         return this.id;
     }
+    public String getName() { return this.name; }
     public String getTitle() {
         return this.title;
-    }
-    public String getCodename() { return this.codename; }
-    public String getCoverArtURI() {
-        return this.coverArtURI;
-    }
-    public String getLogoArtURI() {
-        return this.logoArtURI;
-    }
-    public String getLandscapeArtURI() {
-        return this.landscapeArtURI;
     }
     public String getSynopsis() {
         return this.synopsis;

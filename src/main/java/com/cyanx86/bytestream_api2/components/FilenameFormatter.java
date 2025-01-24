@@ -10,13 +10,27 @@ import java.util.Arrays;
 @Component("filename_formatter_component")
 public class FilenameFormatter {
 
-    private Environment environment;;
+    // -- [[ ATTRIBUTES ]] --
 
+    // -- PRIVATE --
+    // Server Environment Resources
     @Autowired
-    public FilenameFormatter(Environment environment) {
-        this.environment = environment;
+    private Environment environment;
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+    private String[] getFormatParts(String format) {
+        String[] parts = format.split("%");
+        return Arrays.stream(parts)
+                .filter(part -> part.length() > 1)
+                .map(part -> "%" + part + "%")
+                .toArray(String[]::new);
     }
 
+    // -- PUBLIC --
     public String formatFilename(FilenameFormat format, String[] values) {
         String filename = environment.getProperty(format.getPath());
         if (filename == null)
@@ -27,14 +41,6 @@ public class FilenameFormatter {
             filename = filename.replace(parts[i], values[i]);
 
         return filename;
-    }
-
-    private String[] getFormatParts(String format) {
-        String[] parts = format.split("%");
-        return Arrays.stream(parts)
-                .filter(part -> part.length() > 1)
-                .map(part -> "%" + part + "%")
-                .toArray(String[]::new);
     }
 
 }

@@ -12,10 +12,21 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class StaticResourcesMapping implements WebMvcConfigurer {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Static Resource Management Components
     @Autowired
     @Qualifier("media_paths_component")
     private MediaPaths mediaPaths;
 
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Game rating entity image mapping

@@ -8,6 +8,17 @@ import java.io.IOException;
 
 public class DataConverter {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public static BufferedImage byteArrayToImage(byte[] byteArray) throws IOException {
         return ImageIO.read(new ByteArrayInputStream(byteArray));
     }

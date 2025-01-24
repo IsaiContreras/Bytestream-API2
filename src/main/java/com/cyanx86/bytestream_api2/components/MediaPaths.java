@@ -14,17 +14,24 @@ import java.util.Objects;
 @Component("media_paths_component")
 public class MediaPaths {
 
-    private final Environment environment;
-    private static final Log logger = LogFactory.getLog(MediaPaths.class);
+    // -- [[ ATTRIBUTES ]] --
 
+    // -- PRIVATE --
+    // Server Environment Resources
     @Autowired
-    public MediaPaths(Environment environment) {
-        this.environment = environment;
-    }
+    private Environment environment;
 
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public Path getPathOfEntity(@NotNull MediaEntity mediaEntity, String folder) {
         Path result = Path.of(Objects.requireNonNull(environment.getProperty(MediaEntity.ROOT.getPath())))
                 .resolve(mediaEntity.getPath());
+
         if (folder != null) result = result.resolve(folder);
         return result;
     }

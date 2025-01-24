@@ -15,6 +15,7 @@ public class MGameRatingDescriptor {
     // -- PRIVATE --
     // Data
     private UUID id;
+    private String name;
     private String title;
     private String description;
 
@@ -36,6 +37,7 @@ public class MGameRatingDescriptor {
     public MGameRatingDescriptor() {}
     public MGameRatingDescriptor(GameRatingDescriptor gameRatingDescriptor) {
         this.id = gameRatingDescriptor.getId();
+        this.name = gameRatingDescriptor.getName();
         this.title = gameRatingDescriptor.getTitle();
         this.description = gameRatingDescriptor.getDescription();
         this.createdAt = gameRatingDescriptor.getCreatedAt();
@@ -49,6 +51,7 @@ public class MGameRatingDescriptor {
     }
     public MGameRatingDescriptor(MGameRatingDescriptor gameRatingDescriptor) {
         this.id = gameRatingDescriptor.getId();
+        this.name = gameRatingDescriptor.getName();
         this.title = gameRatingDescriptor.getTitle();
         this.description = gameRatingDescriptor.getDescription();
         this.createdAt = gameRatingDescriptor.getCreatedAt();
@@ -58,11 +61,15 @@ public class MGameRatingDescriptor {
         gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
         games = gameRatingDescriptor.getGames();
     }
-    public MGameRatingDescriptor(String title, String description) {
+    public MGameRatingDescriptor(String name, String title, String description) {
+        this.name = name;
         this.title = title;
         this.description = description;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
     public void setTitle(String title) {
         this.title = title;
     }
@@ -72,6 +79,9 @@ public class MGameRatingDescriptor {
 
     public UUID getId() {
         return id;
+    }
+    public String getName() {
+        return name;
     }
     public String getTitle() {
         return title;

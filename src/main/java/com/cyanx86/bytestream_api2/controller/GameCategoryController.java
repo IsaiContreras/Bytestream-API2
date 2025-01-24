@@ -16,34 +16,52 @@ import java.util.UUID;
 @RequestMapping("/categories")
 public class GameCategoryController {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Entity Components
     @Autowired
     @Qualifier("game_category_service")
     private GameCategoryService gameCategoryService;
 
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     @PostMapping("/new")
-    public boolean addNewGameCategory(@RequestBody @Validated GameCategory gameCategory) {
+    public boolean addNewGameCategory(
+            @RequestBody @Validated GameCategory gameCategory
+    ) {
         return this.gameCategoryService.create(gameCategory);
     }
 
     @PatchMapping("/update")
-    public boolean updateGameCategory(@RequestBody @Validated GameCategory gameCategory) {
+    public boolean updateGameCategory(
+            @RequestBody @Validated GameCategory gameCategory
+    ) {
         return this.gameCategoryService.update(gameCategory);
     }
 
     @DeleteMapping("/delete")
-    public boolean deleteGameCategory(@RequestParam("id") UUID id) {
+    public boolean deleteGameCategory(
+            @RequestParam("id") UUID id
+    ) {
         return this.gameCategoryService.delete(id);
     }
 
     @GetMapping("/get")
-    public List<MGameCategory> getAllCategories(Pageable pageable) {
+    public List<MGameCategory> getAllCategories(
+            Pageable pageable
+    ) {
         return this.gameCategoryService.getAll(pageable);
     }
 
     @GetMapping("/byname")
     public List<MGameCategory> getByName(
-            @RequestParam("name") String name,
-            Pageable pageable
+            @RequestParam("name") String name, Pageable pageable
     ) {
         return this.gameCategoryService.getByName(name, pageable);
     }

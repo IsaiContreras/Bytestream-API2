@@ -10,6 +10,17 @@ import java.util.List;
 @Component("game_rating_entity_converter")
 public class GameRatingEntityConverter {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     public List<MGameRatingEntity> parseToList(List<GameRatingEntity> gameRatingEntities) {
         List<MGameRatingEntity> result = new ArrayList<>();
 

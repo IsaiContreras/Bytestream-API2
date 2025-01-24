@@ -3,14 +3,11 @@ package com.cyanx86.bytestream_api2.controller;
 import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
 import com.cyanx86.bytestream_api2.model.MGameRatingEntity;
 import com.cyanx86.bytestream_api2.service.GameRatingEntityService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,25 +19,45 @@ import java.util.UUID;
 @RequestMapping("/rating_entity")
 public class GameRatingEntityController {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Entity Components
     @Autowired
     @Qualifier("game_rating_entity_service")
     private GameRatingEntityService ratingEntityService;
 
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     @PostMapping(value="/new", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean addNewRatingEntity(
             @RequestPart("data") @Validated String gameRatingEntity,
             @RequestPart("logo") MultipartFile logoImage
-    ) throws JsonProcessingException {
-        GameRatingEntity gameRatingEntityObject = new ObjectMapper().readValue(gameRatingEntity, GameRatingEntity.class);
+    )  {
+        GameRatingEntity gameRatingEntityObject;
+        try {
+            gameRatingEntityObject = new ObjectMapper()
+                    .readValue(gameRatingEntity, GameRatingEntity.class);
+        } catch (Exception e) { return false; }
         return ratingEntityService.create(gameRatingEntityObject, logoImage);
     }
 
-    @PatchMapping("/update")
+    @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean updateRatingEntity (
-            @RequestBody @Validated GameRatingEntity gameRatingEntity,
+            @RequestPart("data") @Validated String gameRatingEntity,
             @RequestParam("logo") MultipartFile logoImage
     ) {
-        return ratingEntityService.update(gameRatingEntity, logoImage);
+        GameRatingEntity gameRatingEntityObject;
+        try {
+            gameRatingEntityObject = new ObjectMapper()
+                    .readValue(gameRatingEntity, GameRatingEntity.class);
+        } catch (Exception e) { return false; }
+        return ratingEntityService.update(gameRatingEntityObject, logoImage);
     }
 
     @DeleteMapping("/delete")
@@ -56,7 +73,9 @@ public class GameRatingEntityController {
     }
 
     @GetMapping("/byname")
-    public MGameRatingEntity getByName(@RequestParam("name") String name) {
+    public MGameRatingEntity getByName(
+            @RequestParam("name") String name
+    ) {
         return ratingEntityService.getByName(name);
     }
 
