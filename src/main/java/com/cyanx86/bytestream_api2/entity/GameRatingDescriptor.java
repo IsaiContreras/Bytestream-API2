@@ -22,7 +22,7 @@ public class GameRatingDescriptor implements Serializable {
     @Column(name="r_descriptor_id") @Id @GeneratedValue(strategy= GenerationType.UUID)
     private UUID id;
 
-    @Column(name="name", nullable=false, length=31)
+    @Column(name="name", unique=true, nullable=false, length=31)
     private String name;
 
     @Column(name="title", nullable=false, length=31)

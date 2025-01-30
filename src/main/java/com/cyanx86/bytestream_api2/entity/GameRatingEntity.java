@@ -22,7 +22,7 @@ public class GameRatingEntity implements Serializable {
     @Column(name="entity_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
     private UUID id;
 
-    @Column(name="name", nullable=false, length=15)
+    @Column(name="name", unique=true, nullable=false, length=15)
     private String name;
 
     @Column(name="long_name", nullable=false, length=127)
