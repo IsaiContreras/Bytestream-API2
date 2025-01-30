@@ -1,6 +1,9 @@
 package com.cyanx86.bytestream_api2.misc;
 
-public enum MediaEntity {
+import com.cyanx86.bytestream_api2.configuration.ResourcePathsConfigurer;
+import org.jetbrains.annotations.NotNull;
+
+public enum ResourcePaths {
 
     // -- [[ VALUES ]] --
     ROOT("upload.path"),
@@ -14,6 +17,7 @@ public enum MediaEntity {
 
     // -- PRIVATE --
     private final String path;
+    private String value = null;
 
     // -- PUBLIC --
 
@@ -22,12 +26,20 @@ public enum MediaEntity {
     // -- PRIVATE --
 
     // -- PUBLIC --
-    MediaEntity(String path) {
+    ResourcePaths(@NotNull String path) {
         this.path = path;
     }
 
     public String getPath() {
         return this.path;
+    }
+
+    public void setValue(@NotNull ResourcePathsConfigurer configurer, @NotNull String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return this.value;
     }
 
 }

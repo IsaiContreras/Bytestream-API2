@@ -22,7 +22,7 @@ public class Game implements Serializable {
     @Column(name="game_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
     private UUID id;
 
-    @Column(name="name", nullable = false, length=63)
+    @Column(name="name", unique=true, nullable=false, length=63)
     private String name;
 
     @Column(name="title", nullable=false, length=63)

@@ -1,9 +1,7 @@
-package com.cyanx86.bytestream_api2.components;
+package com.cyanx86.bytestream_api2.utilities;
 
-import com.cyanx86.bytestream_api2.misc.DataConverter;
 import com.cyanx86.bytestream_api2.misc.ImageResolution;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.stereotype.Component;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -15,7 +13,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
 
-@Component("image_resource_manager_component")
 public class ImageResourceManager {
 
     // -- [[ ATTRIBUTES ]] --
@@ -44,7 +41,7 @@ public class ImageResourceManager {
     }
 
     public static boolean storeFile(
-        Path destination, String filename, BufferedImage image, String extension
+        @NotNull Path destination, @NotNull String filename, @NotNull BufferedImage image, @NotNull String extension
     ) {
         try {
             if (!Files.exists(destination))

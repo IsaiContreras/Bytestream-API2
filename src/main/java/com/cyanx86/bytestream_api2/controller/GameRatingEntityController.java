@@ -67,16 +67,16 @@ public class GameRatingEntityController {
         return ratingEntityService.delete(id);
     }
 
-    @GetMapping("/get")
-    public List<MGameRatingEntity> getAll(Pageable pageable) {
-        return ratingEntityService.getAll(pageable);
-    }
-
     @GetMapping("/byname")
     public MGameRatingEntity getByName(
             @RequestParam("name") String name
     ) {
         return ratingEntityService.getByName(name);
+    }
+
+    @GetMapping("/get")
+    public List<MGameRatingEntity> getAll(Pageable pageable) {
+        return ratingEntityService.getAll(pageable);
     }
 
 }

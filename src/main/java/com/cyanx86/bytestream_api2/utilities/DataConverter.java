@@ -1,4 +1,4 @@
-package com.cyanx86.bytestream_api2.misc;
+package com.cyanx86.bytestream_api2.utilities;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

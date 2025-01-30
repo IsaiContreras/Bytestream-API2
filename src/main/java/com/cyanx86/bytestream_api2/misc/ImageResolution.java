@@ -3,8 +3,8 @@ package com.cyanx86.bytestream_api2.misc;
 public enum ImageResolution {
 
     // -- [[ VALUES ]] --
-    ALL_RESOLUTIONS(1, 0, ""),
-    ORIGINAL_WIDTH(2, 0, "full"),
+    ALL_RESOLUTIONS(1, -1, ""),
+    ORIGINAL_WIDTH(2, -1, "full"),
     WIDTH_32(4, 32, "32w"),
     WIDTH_64(8, 64, "64w"),
     WIDTH_128(16, 128, "128w"),
