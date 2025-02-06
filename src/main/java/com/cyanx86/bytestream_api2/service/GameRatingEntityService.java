@@ -1,5 +1,6 @@
 package com.cyanx86.bytestream_api2.service;
 
+import com.cyanx86.bytestream_api2.component.GameRatingEntityMapper;
 import com.cyanx86.bytestream_api2.utilities.FilenameFormatter;
 import com.cyanx86.bytestream_api2.utilities.ImageResourceManager;
 import com.cyanx86.bytestream_api2.utilities.ResourcePathProvider;
@@ -9,9 +10,13 @@ import com.cyanx86.bytestream_api2.misc.*;
 import com.cyanx86.bytestream_api2.model.MGameRatingEntity;
 import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
 import com.cyanx86.bytestream_api2.utilities.DataConverter;
+
 import jakarta.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
@@ -50,6 +55,8 @@ public class GameRatingEntityService {
     @Autowired
     @Qualifier("game_rating_entity_converter")
     private GameRatingEntityConverter ratingEntityConverter;
+
+    private final GameRatingEntityMapper ratingEntityMapper;
 
     // Class Components
     private static final Log logger = LogFactory.getLog(GameRatingEntityService.class);
@@ -146,7 +153,13 @@ public class GameRatingEntityService {
     }
 
     // -- PUBLIC --
-    public boolean create(GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
+    @Autowired
+    public GameRatingEntityService(GameRatingEntityMapper ratingEntityMapper) {
+        this.ratingEntityMapper = ratingEntityMapper;
+    }
+
+    // CUD
+    public boolean create(@NotNull GameRatingEntity gameRatingEntity, @NotNull MultipartFile logoImage) {
         GameRatingEntity newItem = null;
         try {
             ratingEntityRepository.save(gameRatingEntity);
@@ -156,7 +169,6 @@ public class GameRatingEntityService {
                 ratingEntityRepository.delete(newItem);
                 return false;
             }
-
             return true;
         } catch(Exception e) {
             if (newItem != null) ratingEntityRepository.delete(newItem);
@@ -164,11 +176,19 @@ public class GameRatingEntityService {
         }
     }
 
-    public boolean update(GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
+    public boolean update(@NotNull GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
         try {
-            if (!this.uploadEntityLogo(logoImage, gameRatingEntity.getId()))
+            GameRatingEntity ratingEntityToUpdate = ratingEntityRepository.findById(gameRatingEntity.getId());
+
+            if (
+                    !(logoImage.isEmpty()) &&
+                    (ratingEntityToUpdate == null || !this.uploadEntityLogo(logoImage, ratingEntityToUpdate.getId()))
+            )
                 return false;
-            ratingEntityRepository.save(gameRatingEntity);
+
+            ratingEntityMapper.partialUpdateRatingEntity(ratingEntityToUpdate, gameRatingEntity);
+
+            ratingEntityRepository.save(ratingEntityToUpdate);
             return true;
         } catch(Exception e) {
             return false;
@@ -179,6 +199,7 @@ public class GameRatingEntityService {
         try {
             GameRatingEntity gameRatingEntity = ratingEntityRepository.findById(id);
             gameRatingEntity.setDeletedAt(new Date());
+
             ratingEntityRepository.save(gameRatingEntity);
             return true;
         } catch(Exception e) {
@@ -186,17 +207,12 @@ public class GameRatingEntityService {
         }
     }
 
-    public List<MGameRatingEntity> getAll(Pageable pageable) {
-        List<MGameRatingEntity> results = ratingEntityConverter
-                .parseToList(ratingEntityRepository.findAll(pageable).getContent());
-        this.getLogoURIs(results);
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
-    }
-
+    // Queries
     public MGameRatingEntity getByName(String name) {
         GameRatingEntity queriedRatingEntity = ratingEntityRepository.findByName(name);
         if (queriedRatingEntity.getDeletedAt() != null)
             return null;
+
         MGameRatingEntity mRatingEntity = new MGameRatingEntity(queriedRatingEntity);
         this.getLogoURIs(List.of(mRatingEntity));
         return mRatingEntity;
@@ -239,6 +255,13 @@ public class GameRatingEntityService {
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
+    }
+
+    public List<MGameRatingEntity> getAll(Pageable pageable) {
+        List<MGameRatingEntity> results = ratingEntityConverter
+                .parseToList(ratingEntityRepository.findAll(pageable).getContent());
+        this.getLogoURIs(results);
+        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
 }

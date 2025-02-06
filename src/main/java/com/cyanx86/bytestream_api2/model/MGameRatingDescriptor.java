@@ -2,6 +2,7 @@ package com.cyanx86.bytestream_api2.model;
 
 import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +17,6 @@ public class MGameRatingDescriptor {
     // Data
     private UUID id;
     private String name;
-    private String title;
     private String description;
 
     private Date createdAt;
@@ -25,7 +25,6 @@ public class MGameRatingDescriptor {
 
     // Relations
     private MGameRatingEntity gameRatingEntity;
-    private List<MGame> games;
 
     // -- PUBLIC --
 
@@ -35,75 +34,61 @@ public class MGameRatingDescriptor {
 
     // -- PUBLIC --
     public MGameRatingDescriptor() {}
-    public MGameRatingDescriptor(GameRatingDescriptor gameRatingDescriptor) {
+    public MGameRatingDescriptor(@NotNull GameRatingDescriptor gameRatingDescriptor, boolean recursive) {
         this.id = gameRatingDescriptor.getId();
         this.name = gameRatingDescriptor.getName();
-        this.title = gameRatingDescriptor.getTitle();
         this.description = gameRatingDescriptor.getDescription();
         this.createdAt = gameRatingDescriptor.getCreatedAt();
         this.updatedAt = gameRatingDescriptor.getUpdatedAt();
         this.deletedAt = gameRatingDescriptor.getDeletedAt();
 
-        gameRatingEntity = new MGameRatingEntity(gameRatingDescriptor.getGameRatingEntity());
-        games = new ArrayList<>();
-        for (Game itemGame : gameRatingDescriptor.getGames())
-            games.add(new MGame(itemGame));
+        if (recursive)
+            this.gameRatingEntity = new MGameRatingEntity(gameRatingDescriptor.getGameRatingEntity());
     }
-    public MGameRatingDescriptor(MGameRatingDescriptor gameRatingDescriptor) {
+    public MGameRatingDescriptor(@NotNull MGameRatingDescriptor gameRatingDescriptor) {
         this.id = gameRatingDescriptor.getId();
         this.name = gameRatingDescriptor.getName();
-        this.title = gameRatingDescriptor.getTitle();
         this.description = gameRatingDescriptor.getDescription();
+
         this.createdAt = gameRatingDescriptor.getCreatedAt();
         this.updatedAt = gameRatingDescriptor.getUpdatedAt();
         this.deletedAt = gameRatingDescriptor.getDeletedAt();
 
-        gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
-        games = gameRatingDescriptor.getGames();
+        this.gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
     }
-    public MGameRatingDescriptor(String name, String title, String description) {
+    public MGameRatingDescriptor(@NotNull String name, @NotNull String description) {
         this.name = name;
-        this.title = title;
         this.description = description;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public void setDescription(String description) {
+    public void setDescription(@NotNull String description) {
         this.description = description;
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
-    }
-    public String getTitle() {
-        return title;
+        return this.name;
     }
     public String getDescription() {
-        return description;
+        return this.description;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public MGameRatingEntity getGameRatingEntity() {
-        return new MGameRatingEntity(gameRatingEntity);
-    }
-    public List<MGame> getGames() {
-        return new ArrayList<>(games);
+        return this.gameRatingEntity;
     }
 
 }

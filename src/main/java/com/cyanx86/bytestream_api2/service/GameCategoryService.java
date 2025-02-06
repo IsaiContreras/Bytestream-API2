@@ -1,11 +1,14 @@
 package com.cyanx86.bytestream_api2.service;
 
+import com.cyanx86.bytestream_api2.component.GameCategoryMapper;
 import com.cyanx86.bytestream_api2.converter.GameCategoryConverter;
 import com.cyanx86.bytestream_api2.entity.GameCategory;
 import com.cyanx86.bytestream_api2.model.MGameCategory;
 import com.cyanx86.bytestream_api2.repository.GameCategoryRepository;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +33,8 @@ public class GameCategoryService {
     @Qualifier("game_category_converter")
     private GameCategoryConverter gameCategoryConverter;
 
+    private final GameCategoryMapper categoryMapper;
+
     // Class Components
     private static final Log logger = LogFactory.getLog(GameCategoryService.class);
 
@@ -40,6 +45,12 @@ public class GameCategoryService {
     // -- PRIVATE --
 
     // -- PUBLIC --
+    @Autowired
+    public GameCategoryService(GameCategoryMapper categoryMapper) {
+        this.categoryMapper = categoryMapper;
+    }
+
+    // CUD
     public boolean create(GameCategory gameCategory) {
         try {
             gameCategoryRepository.save(gameCategory);
@@ -51,7 +62,11 @@ public class GameCategoryService {
 
     public boolean update(GameCategory gameCategory) {
         try {
-            gameCategoryRepository.save(gameCategory);
+            GameCategory categoryToUpdate = gameCategoryRepository.findById(gameCategory.getId());
+
+            categoryMapper.partialUpdateCategory(categoryToUpdate, gameCategory);
+
+            gameCategoryRepository.save(categoryToUpdate);
             return true;
         } catch (Exception e) {
             return false;
@@ -62,6 +77,7 @@ public class GameCategoryService {
         try {
             GameCategory category = gameCategoryRepository.findById(id);
             category.setDeletedAt(new Date());
+
             gameCategoryRepository.save(category);
             return true;
         } catch (Exception e) {
@@ -69,15 +85,24 @@ public class GameCategoryService {
         }
     }
 
-    public List<MGameCategory> getAll(Pageable pageable) {
+    // Queries
+    public MGameCategory getByName(String name){
+        GameCategory category = gameCategoryRepository.findByName(name);
+        if (category == null || category.getDeletedAt() != null)
+            return null;
+
+        return new MGameCategory(category);
+    }
+
+    public List<MGameCategory> getByNameContains(String name, Pageable pageable) {
         List<MGameCategory> results = gameCategoryConverter
-                .parseToList(gameCategoryRepository.findAll(pageable).getContent());
+                .parseToList(gameCategoryRepository.findByNameContains(name, pageable).getContent());
         return results.stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
-    public List<MGameCategory> getByName(String name, Pageable pageable) {
+    public List<MGameCategory> getAll(Pageable pageable) {
         List<MGameCategory> results = gameCategoryConverter
-                .parseToList(gameCategoryRepository.findByNameContains(name, pageable).getContent());
+                .parseToList(gameCategoryRepository.findAll(pageable).getContent());
         return results.stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 

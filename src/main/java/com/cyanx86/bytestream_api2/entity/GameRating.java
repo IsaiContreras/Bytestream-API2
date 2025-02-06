@@ -3,6 +3,7 @@ package com.cyanx86.bytestream_api2.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -25,9 +26,6 @@ public class GameRating implements Serializable {
     @Column(name="name", unique=true, nullable = false, length=31)
     private String name;
 
-    @Column(name="title", nullable=false, length=31)
-    private String title;
-
     @Column(name="description", nullable=false, length=31)
     private String description;
 
@@ -43,7 +41,7 @@ public class GameRating implements Serializable {
     private Date deletedAt;
 
     // Relations
-    @ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL, optional=false)
+    @ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.MERGE, optional=false)
     @JoinColumn(name="entity_id")
     private GameRatingEntity gameRatingEntity;
 
@@ -58,49 +56,58 @@ public class GameRating implements Serializable {
 
     // -- PUBLIC --
     public GameRating() {}
-    public GameRating(GameRating gameRating) {
+    public GameRating(@NotNull GameRating gameRating) {
         this.id = gameRating.getId();
         this.name = gameRating.getName();
-        this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
         this.createdAt = gameRating.getCreatedAt();
         this.updatedAt = gameRating.getUpdatedAt();
         this.deletedAt = gameRating.getDeletedAt();
 
-        gameRatingEntity = gameRating.getGameRatingEntity();
-        games = gameRating.getGames();
+        this.gameRatingEntity = gameRating.getGameRatingEntity();
+        this.games = gameRating.getGames();
     }
-    public GameRating(String name, String title, String description) {
+    public GameRating(@NotNull String name, @NotNull String description) {
         this.name = name;
-        this.title = title;
         this.description = description;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    public void setGameRatingEntity(GameRatingEntity gameRatingEntity) {
+        this.gameRatingEntity = gameRatingEntity;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
     public UUID getId() {
-        return id;
+        return this.id;
     }
-    public String getName() { return name; }
-    public String getTitle() {
-        return title;
-    }
+    public String getName() { return this.name; }
     public String getDescription() {
-        return description;
+        return this.description;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public GameRatingEntity getGameRatingEntity() {
-        return new GameRatingEntity(gameRatingEntity);
+        return this.gameRatingEntity;
     }
     public List<Game> getGames() {
-        return new ArrayList<>(games);
+        return (this.games == null) ? null : new ArrayList<>(this.games);
     }
 
 }

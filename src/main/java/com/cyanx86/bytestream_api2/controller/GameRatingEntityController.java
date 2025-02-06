@@ -34,7 +34,8 @@ public class GameRatingEntityController {
     // -- PRIVATE --
 
     // -- PUBLIC --
-    @PostMapping(value="/new", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+    // CUD
+    @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean addNewRatingEntity(
             @RequestPart("data") @Validated String gameRatingEntity,
             @RequestPart("logo") MultipartFile logoImage
@@ -67,7 +68,8 @@ public class GameRatingEntityController {
         return ratingEntityService.delete(id);
     }
 
-    @GetMapping("/byname")
+    // Queries
+    @GetMapping("/get/byname")
     public MGameRatingEntity getByName(
             @RequestParam("name") String name
     ) {

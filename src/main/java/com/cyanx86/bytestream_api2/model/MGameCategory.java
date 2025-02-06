@@ -2,6 +2,7 @@ package com.cyanx86.bytestream_api2.model;
 
 import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameCategory;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,9 +22,6 @@ public class MGameCategory {
     private Date updatedAt;
     private Date deletedAt;
 
-    // Relations
-    private List<MGame> games;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -32,52 +30,42 @@ public class MGameCategory {
 
     // -- PUBLIC --
     public MGameCategory() {}
-    public MGameCategory(GameCategory gameCategory) {
+    public MGameCategory(@NotNull GameCategory gameCategory) {
         this.id = gameCategory.getId();
         this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
-
-        games = new ArrayList<>();
-        for (Game itemGame : gameCategory.getGames())
-            games.add(new MGame(itemGame));
     }
-    public MGameCategory(MGameCategory gameCategory) {
+    public MGameCategory(@NotNull MGameCategory gameCategory) {
         this.id = gameCategory.getId();
         this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
-
-        games = gameCategory.getGames();
     }
-    public MGameCategory(String name) {
+    public MGameCategory(@NotNull String name) {
         this.name = name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
+        return this.name;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
-    }
-
-    public List<MGame> getGames() {
-        return new ArrayList<>(games);
+        return this.deletedAt;
     }
 
 }

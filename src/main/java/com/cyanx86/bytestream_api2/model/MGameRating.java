@@ -2,6 +2,7 @@ package com.cyanx86.bytestream_api2.model;
 
 import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameRating;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +17,6 @@ public class MGameRating {
     // Data
     private UUID id;
     private String name;
-    private String title;
     private String description;
 
     private Date createdAt;
@@ -25,7 +25,6 @@ public class MGameRating {
 
     // Relations
     private MGameRatingEntity gameRatingEntity;
-    private List<MGame> games;
 
     // -- PUBLIC --
 
@@ -35,76 +34,60 @@ public class MGameRating {
 
     // -- PUBLIC --
     public MGameRating() {}
-    public MGameRating(GameRating gameRating) {
+    public MGameRating(@NotNull GameRating gameRating, boolean recursive) {
         this.id = gameRating.getId();
         this.name = gameRating.getName();
-        this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
         this.createdAt = gameRating.getCreatedAt();
         this.updatedAt = gameRating.getUpdatedAt();
         this.deletedAt = gameRating.getDeletedAt();
 
-        this.gameRatingEntity = new MGameRatingEntity(gameRating.getGameRatingEntity());
-
-        games = new ArrayList<>();
-        for (Game itemGame : gameRating.getGames())
-            games.add(new MGame(itemGame));
+        if (recursive)
+            this.gameRatingEntity = new MGameRatingEntity(gameRating.getGameRatingEntity());
     }
-    public MGameRating(MGameRating gameRating) {
+    public MGameRating(@NotNull MGameRating gameRating) {
         this.id = gameRating.getId();
         this.name = gameRating.getName();
-        this.title = gameRating.getTitle();
         this.description = gameRating.getDescription();
         this.createdAt = gameRating.getCreatedAt();
         this.updatedAt = gameRating.getUpdatedAt();
         this.deletedAt = gameRating.getDeletedAt();
 
         this.gameRatingEntity = gameRating.getGameRatingEntity();
-        games = gameRating.getGames();
     }
-    public MGameRating(String name, String title, String description, String logoURI) {
+    public MGameRating(@NotNull String name, @NotNull String description) {
         this.name = name;
-        this.title = title;
         this.description = description;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public void setDescription(String description) {
+    public void setDescription(@NotNull String description) {
         this.description = description;
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
-    }
-    public String getTitle() {
-        return title;
+        return this.name;
     }
     public String getDescription() {
-        return description;
+        return this.description;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public MGameRatingEntity getGameRatingEntity() {
-        return new MGameRatingEntity(gameRatingEntity);
-    }
-    public List<MGame> getGames() {
-        return new ArrayList<>(games);
+        return this.gameRatingEntity;
     }
 
 }
