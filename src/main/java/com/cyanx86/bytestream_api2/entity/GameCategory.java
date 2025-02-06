@@ -3,6 +3,7 @@ package com.cyanx86.bytestream_api2.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -48,7 +49,7 @@ public class GameCategory implements Serializable {
 
     // -- PUBLIC --
     public GameCategory() {}
-    public GameCategory(GameCategory gameCategory) {
+    public GameCategory(@NotNull GameCategory gameCategory) {
         this.id = gameCategory.getId();
         this.name = gameCategory.getName();
         this.createdAt = gameCategory.getCreatedAt();
@@ -57,30 +58,33 @@ public class GameCategory implements Serializable {
 
         this.games = gameCategory.getGames();
     }
-    public GameCategory(String name) {
+    public GameCategory(@NotNull String name) {
         this.name = name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
     public void setDeletedAt(Date deletedAt) { this.deletedAt = deletedAt; }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
+        return this.name;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public List<Game> getGames() {
-        return new ArrayList<>(games);
+        return (this.games == null) ? null : new ArrayList<>(this.games);
     }
 
 }

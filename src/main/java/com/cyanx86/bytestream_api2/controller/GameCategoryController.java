@@ -31,7 +31,8 @@ public class GameCategoryController {
     // -- PRIVATE --
 
     // -- PUBLIC --
-    @PostMapping("/new")
+    // CUD
+    @PostMapping("/create")
     public boolean addNewGameCategory(
             @RequestBody @Validated GameCategory gameCategory
     ) {
@@ -52,18 +53,26 @@ public class GameCategoryController {
         return this.gameCategoryService.delete(id);
     }
 
+    // Queries
+    @GetMapping("/get/byname")
+    public MGameCategory getByName(
+            @RequestParam("name") String name
+    ) {
+        return this.gameCategoryService.getByName(name);
+    }
+
+    @GetMapping("/get/bynamematch")
+    public List<MGameCategory> getByNameContains(
+            @RequestParam("name") String name, Pageable pageable
+    ) {
+        return this.gameCategoryService.getByNameContains(name, pageable);
+    }
+
     @GetMapping("/get")
     public List<MGameCategory> getAllCategories(
             Pageable pageable
     ) {
         return this.gameCategoryService.getAll(pageable);
-    }
-
-    @GetMapping("/byname")
-    public List<MGameCategory> getByName(
-            @RequestParam("name") String name, Pageable pageable
-    ) {
-        return this.gameCategoryService.getByName(name, pageable);
     }
 
 }

@@ -4,6 +4,7 @@ import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameCategory;
 import com.cyanx86.bytestream_api2.entity.GameRating;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,7 +40,7 @@ public class MGame {
     // -- PUBLIC
 
     public MGame() {}
-    public MGame(Game game) {
+    public MGame(@NotNull Game game, boolean recursive) {
         this.id = game.getId();
         this.title = game.getTitle();
         this.name = game.getName();
@@ -49,19 +50,21 @@ public class MGame {
         this.updatedAt = game.getUpdatedAt();
         this.deletedAt = game.getDeletedAt();
 
-        this.gameCategories = new ArrayList<>();
-        for (GameCategory itemGameCategory : game.getGameCategories())
-            this.gameCategories.add(new MGameCategory(itemGameCategory));
+        if (recursive) {
+            this.gameCategories = new ArrayList<>();
+            for (GameCategory itemGameCategory : game.getGameCategories())
+                this.gameCategories.add(new MGameCategory(itemGameCategory));
 
-        this.gameRatings = new ArrayList<>();
-        for(GameRating itemGameRating : game.getGameRatings())
-            this.gameRatings.add(new MGameRating(itemGameRating));
+            this.gameRatings = new ArrayList<>();
+            for (GameRating itemGameRating : game.getGameRatings())
+                this.gameRatings.add(new MGameRating(itemGameRating, false));
 
-        this.gameRatingDescriptors = new ArrayList<>();
-        for (GameRatingDescriptor itemGameRating : game.getGameRatingDescriptors())
-            this.gameRatingDescriptors.add(new MGameRatingDescriptor(itemGameRating));
+            this.gameRatingDescriptors = new ArrayList<>();
+            for (GameRatingDescriptor itemGameRating : game.getGameRatingDescriptors())
+                this.gameRatingDescriptors.add(new MGameRatingDescriptor(itemGameRating, false));
+        }
     }
-    public MGame(MGame game) {
+    public MGame(@NotNull MGame game) {
         this.id = game.getId();
         this.name = game.getName();
         this.title = game.getTitle();
@@ -75,30 +78,28 @@ public class MGame {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public MGame(String name, String title, String synopsis) {
+    public MGame(@NotNull String name, @NotNull String title, @NotNull String synopsis) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
     }
 
-    public void setName(String name) { this.name = name; }
-    public void setTitle(String title) {
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+    public void setTitle(@NotNull String title) {
         this.title = title;
     }
-    public void setSynopsis(String synopsis) {
+    public void setSynopsis(@NotNull String synopsis) {
         this.synopsis = synopsis;
-    }
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-    public void setDeletedAt(Date deletedAt) {
-        this.deletedAt = deletedAt;
     }
 
     public UUID getId() {
         return this.id;
     }
-    public String getName() { return this.name; }
+    public String getName() {
+        return this.name;
+    }
     public String getTitle() {
         return this.title;
     }
@@ -116,13 +117,13 @@ public class MGame {
     }
 
     public List<MGameCategory> getGameCategories() {
-        return new ArrayList<>(this.gameCategories);
+        return (this.gameCategories == null) ? null : new ArrayList<>(this.gameCategories);
     }
     public List<MGameRating> getGameRatings() {
-        return new ArrayList<>(this.gameRatings);
+        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
     }
     public List<MGameRatingDescriptor> getGameRatingDescriptors() {
-        return new ArrayList<>(this.gameRatingDescriptors);
+        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
     }
 
 }

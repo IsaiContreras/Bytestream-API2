@@ -3,6 +3,7 @@ package com.cyanx86.bytestream_api2.model;
 import com.cyanx86.bytestream_api2.entity.GameRating;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
 import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,10 +28,6 @@ public class MGameRatingEntity {
     private Date updatedAt;
     private Date deletedAt;
 
-    // Relations
-    private List<MGameRating> gameRatings;
-    private List<MGameRatingDescriptor> gameRatingDescriptors;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -39,7 +36,7 @@ public class MGameRatingEntity {
 
     // -- PUBLIC --
     public MGameRatingEntity() {}
-    public MGameRatingEntity(GameRatingEntity gameRatingEntity) {
+    public MGameRatingEntity(@NotNull GameRatingEntity gameRatingEntity) {
         this.id = gameRatingEntity.getId();
         this.name = gameRatingEntity.getName();
         this.longName = gameRatingEntity.getLongName();
@@ -49,16 +46,8 @@ public class MGameRatingEntity {
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
         this.deletedAt = gameRatingEntity.getDeletedAt();
-
-        gameRatings = new ArrayList<>();
-        for (GameRating itemGameRating : gameRatingEntity.getGameRatings())
-            gameRatings.add(new MGameRating(itemGameRating));
-
-        gameRatingDescriptors = new ArrayList<>();
-        for (GameRatingDescriptor itemGameRatingDescriptor : gameRatingEntity.getGameRatingDescriptors())
-            gameRatingDescriptors.add(new MGameRatingDescriptor(itemGameRatingDescriptor));
     }
-    public MGameRatingEntity(MGameRatingEntity gameRatingEntity) {
+    public MGameRatingEntity(@NotNull MGameRatingEntity gameRatingEntity) {
         this.id = gameRatingEntity.getId();
         this.name = gameRatingEntity.getName();
         this.longName = gameRatingEntity.getLongName();
@@ -68,59 +57,55 @@ public class MGameRatingEntity {
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
         this.deletedAt = gameRatingEntity.getDeletedAt();
-
-        gameRatings = gameRatingEntity.getGameRatings();
-        gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
     }
-    public MGameRatingEntity(String name, String longName, String location, String description) {
+    public MGameRatingEntity(
+            @NotNull String name, @NotNull String longName, @NotNull String location, @NotNull String description
+    ) {
         this.name = name;
         this.longName = longName;
         this.location = location;
         this.description = description;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
-    public void setLongName(String longName) { this.longName = longName; }
-    public void setLocation(String location) {
+    public void setLongName(@NotNull String longName) {
+        this.longName = longName;
+    }
+    public void setLocation(@NotNull String location) {
         this.location = location;
     }
-    public void setDescription(String description) {
+    public void setDescription(@NotNull String description) {
         this.description = description;
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
+        return this.name;
     }
-    public String getLongName() { return longName; }
+    public String getLongName() {
+        return this.longName;
+    }
     public String getLocation() {
-        return location;
+        return this.location;
     }
     public String getDescription() {
-        return description;
+        return this.description;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
     public List<String> getLogoURIList() {
-        return logoURIList;
-    }
-
-    public List<MGameRating> getGameRatings() {
-        return new ArrayList<>(gameRatings);
-    }
-    public List<MGameRatingDescriptor> getGameRatingDescriptors() {
-        return new ArrayList<>(gameRatingDescriptors);
+        return this.logoURIList;
     }
 
 }

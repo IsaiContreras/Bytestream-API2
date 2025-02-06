@@ -3,13 +3,11 @@ package com.cyanx86.bytestream_api2.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="game_rating_entities")
@@ -46,7 +44,7 @@ public class GameRatingEntity implements Serializable {
     private Date deletedAt;
 
     // Relations
-    @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="gameRatingEntity")
+    @OneToMany(cascade=CascadeType.MERGE, fetch=FetchType.LAZY, mappedBy="gameRatingEntity")
     private List<GameRating> gameRatings;
 
     @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="gameRatingEntity")
@@ -60,22 +58,38 @@ public class GameRatingEntity implements Serializable {
 
     // -- PUBLIC --
     public GameRatingEntity() {}
-    public GameRatingEntity(GameRatingEntity gameRatingEntity) {
+    public GameRatingEntity(@NotNull GameRatingEntity gameRatingEntity) {
         this.id = gameRatingEntity.getId();
         this.name = gameRatingEntity.getName();
         this.longName = gameRatingEntity.getLongName();
+        this.location = gameRatingEntity.getLocation();
         this.description = gameRatingEntity.getDescription();
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
         this.deletedAt = gameRatingEntity.getDeletedAt();
 
         this.gameRatings = gameRatingEntity.getGameRatings();
-        this.gameRatingDescriptors = getGameRatingDescriptors();
+        this.gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
     }
-    public GameRatingEntity(String name, String longName, String location, String description) {
+    public GameRatingEntity(
+            @NotNull String name, @NotNull String longName, @NotNull String location, @NotNull String description
+    ) {
         this.name = name;
         this.longName = longName;
         this.location = location;
+        this.description = description;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+    public void setLongName(String longName) {
+        this.longName = longName;
+    }
+    public void setLocation(String location) {
+        this.location = location;
+    }
+    public void setDescription(String description) {
         this.description = description;
     }
 
@@ -84,33 +98,35 @@ public class GameRatingEntity implements Serializable {
     }
 
     public UUID getId() {
-        return id;
+        return this.id;
     }
     public String getName() {
-        return name;
+        return this.name;
     }
-    public String getLongName() { return longName; }
+    public String getLongName() {
+        return this.longName;
+    }
     public String getLocation() {
-        return location;
+        return this.location;
     }
     public String getDescription() {
-        return description;
+        return this.description;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public List<GameRating> getGameRatings() {
-        return new ArrayList<>(gameRatings);
+        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return new ArrayList<>(gameRatingDescriptors);
+        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
     }
 
 }

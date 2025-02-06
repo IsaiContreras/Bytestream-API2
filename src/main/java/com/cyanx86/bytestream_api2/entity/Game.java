@@ -3,6 +3,7 @@ package com.cyanx86.bytestream_api2.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -60,7 +61,7 @@ public class Game implements Serializable {
 
     // -- PUBLIC --
     public Game() {}
-    public Game(Game game) {
+    public Game(@NotNull Game game) {
         this.id = game.getId();
         this.name = game.getName();
         this.title = game.getTitle();
@@ -73,40 +74,63 @@ public class Game implements Serializable {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public Game(String name, String title, String synopsis) {
+    public Game(@NotNull String name, @NotNull String title, @NotNull String synopsis) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
     }
 
-    public UUID getId() {
-        return id;
+    public void setName(String name) {
+        this.name = name;
     }
-    public String getName() { return name; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
+    }
+    public void setGameCategories(List<GameCategory> gameCategories) {
+        this.gameCategories = gameCategories;
+    }
+    public void setGameRatings(List<GameRating> gameRatings) {
+        this.gameRatings = gameRatings;
+    }
+    public void setGameRatingDescriptors(List<GameRatingDescriptor> gameRatingDescriptors) {
+        this.gameRatingDescriptors = gameRatingDescriptors;
+    }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+    public String getName() { return this.name; }
     public String getTitle() {
-        return title;
+        return this.title;
     }
     public String getSynopsis() {
-        return synopsis;
+        return this.synopsis;
     }
     public Date getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
     public Date getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
     public Date getDeletedAt() {
-        return deletedAt;
+        return this.deletedAt;
     }
 
     public List<GameCategory> getGameCategories() {
-        return new ArrayList<>(gameCategories);
+        return (this.gameCategories == null) ? null : new ArrayList<>(this.gameCategories);
     }
     public List<GameRating> getGameRatings() {
-        return new ArrayList<>(gameRatings);
+        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return new ArrayList<>(gameRatingDescriptors);
+        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
     }
 
 }
