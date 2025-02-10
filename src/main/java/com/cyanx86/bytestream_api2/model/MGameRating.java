@@ -19,6 +19,8 @@ public class MGameRating {
     private String name;
     private String description;
 
+    private final List<String> logoURIList = new ArrayList<>();
+
     private Date createdAt;
     private Date updatedAt;
     private Date deletedAt;
@@ -75,6 +77,9 @@ public class MGameRating {
     }
     public String getDescription() {
         return this.description;
+    }
+    public List<String> getLogoURIList() {
+        return this.logoURIList;
     }
     public Date getCreatedAt() {
         return this.createdAt;

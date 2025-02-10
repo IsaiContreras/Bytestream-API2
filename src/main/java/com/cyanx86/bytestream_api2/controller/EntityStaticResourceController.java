@@ -1,6 +1,7 @@
 package com.cyanx86.bytestream_api2.controller;
 
 import com.cyanx86.bytestream_api2.service.GameRatingEntityService;
+import com.cyanx86.bytestream_api2.service.GameRatingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
@@ -21,6 +22,10 @@ public class EntityStaticResourceController {
     @Qualifier("game_rating_entity_service")
     private GameRatingEntityService ratingEntityService;
 
+    @Autowired
+    @Qualifier("game_rating_service")
+    private GameRatingService ratingService;
+
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -34,6 +39,14 @@ public class EntityStaticResourceController {
         @PathVariable("filename") String filename
     ) {
         return ratingEntityService.getLogoImage(name, filename);
+    }
+
+    @GetMapping("/rating/{name}/{filename}")
+    public ResponseEntity<Resource> ratingImages(
+            @PathVariable("name") String name,
+            @PathVariable("filename") String filename
+    ) {
+        return ratingService.getLogoImage(name, filename);
     }
 
 }

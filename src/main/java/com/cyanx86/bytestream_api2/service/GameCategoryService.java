@@ -95,15 +95,15 @@ public class GameCategoryService {
     }
 
     public List<MGameCategory> getByNameContains(String name, Pageable pageable) {
-        List<MGameCategory> results = gameCategoryConverter
-                .parseToList(gameCategoryRepository.findByNameContains(name, pageable).getContent());
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
+        return gameCategoryConverter.parseToList(
+                gameCategoryRepository.findByNameContains(name, pageable).getContent()
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
     public List<MGameCategory> getAll(Pageable pageable) {
-        List<MGameCategory> results = gameCategoryConverter
-                .parseToList(gameCategoryRepository.findAll(pageable).getContent());
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
+        return gameCategoryConverter.parseToList(
+                gameCategoryRepository.findAll(pageable).getContent()
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
 }

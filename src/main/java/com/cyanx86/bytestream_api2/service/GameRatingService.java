@@ -1,15 +1,20 @@
 package com.cyanx86.bytestream_api2.service;
 
-import com.cyanx86.bytestream_api2.component.GameRatingEntityMapper;
+import com.cyanx86.bytestream_api2.component.GameRatingMapper;
+import com.cyanx86.bytestream_api2.converter.GameRatingConverter;
+import com.cyanx86.bytestream_api2.entity.GameRating;
+import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
+import com.cyanx86.bytestream_api2.misc.FilenameFormat;
+import com.cyanx86.bytestream_api2.misc.ImageResolution;
+import com.cyanx86.bytestream_api2.misc.ResourcePaths;
+import com.cyanx86.bytestream_api2.misc.StaticResourcesPaths;
+import com.cyanx86.bytestream_api2.model.MGameRating;
+import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
+import com.cyanx86.bytestream_api2.repository.GameRatingRepository;
+import com.cyanx86.bytestream_api2.utilities.DataConverter;
 import com.cyanx86.bytestream_api2.utilities.FilenameFormatter;
 import com.cyanx86.bytestream_api2.utilities.ImageResourceManager;
 import com.cyanx86.bytestream_api2.utilities.ResourcePathProvider;
-import com.cyanx86.bytestream_api2.converter.GameRatingEntityConverter;
-import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
-import com.cyanx86.bytestream_api2.misc.*;
-import com.cyanx86.bytestream_api2.model.MGameRatingEntity;
-import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
-import com.cyanx86.bytestream_api2.utilities.DataConverter;
 
 import jakarta.servlet.ServletContext;
 
@@ -17,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.jetbrains.annotations.NotNull;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
@@ -32,12 +38,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 
-@Service("game_rating_entity_service")
-public class GameRatingEntityService {
+@Service("game_rating_service")
+public class GameRatingService {
 
-    // -- [[ ATTRIBUTES ]] --
+    // -- [[ ATTRIBUTE ]] --
 
     // -- PRIVATE --
     // Server Environment Resources
@@ -49,19 +54,24 @@ public class GameRatingEntityService {
 
     // Entity Components
     @Autowired
+    @Qualifier("game_rating_repository")
+    private GameRatingRepository ratingRepository;
+
+    @Autowired
     @Qualifier("game_rating_entity_repository")
     private GameRatingEntityRepository ratingEntityRepository;
 
     @Autowired
-    @Qualifier("game_rating_entity_converter")
-    private GameRatingEntityConverter ratingEntityConverter;
+    @Qualifier("game_rating_converter")
+    private GameRatingConverter ratingConverter;
 
-    private final GameRatingEntityMapper ratingEntityMapper;
+    private final GameRatingMapper ratingMapper;
 
     // Class Components
-    private static final Log logger = LogFactory.getLog(GameRatingEntityService.class);
+    private static final Log logger = LogFactory.getLog(GameRatingService.class);
 
-    private final int logoResolutionConfiguration = ImageResolution.ALL_RESOLUTIONS_VALUE;
+    private final int logoResolutionConfiguration =
+            ImageResolution.WIDTH_32_VALUE | ImageResolution.WIDTH_256_VALUE | ImageResolution.ORIGINAL_WIDTH_VALUE;
 
     // -- PUBLIC --
 
@@ -84,13 +94,12 @@ public class GameRatingEntityService {
 
         String extension = Objects.requireNonNull(image.getContentType()).split("/")[1];
         Path storageDestination = ResourcePathProvider.getPathOfEntity(
-                ResourcePaths.GAME_RATING_ENTITIES, id.toString()
+                ResourcePaths.GAME_RATING, id.toString()
         );
         if (storageDestination == null)
             return false;
 
         for (BufferedImage rescaledItem : rescaledImages) {
-
             String suffix;
             if (rescaledItem.getWidth() == originalImage.getWidth())
                 suffix = "full";
@@ -119,17 +128,17 @@ public class GameRatingEntityService {
         return true;
     }
 
-    private void getLogoURIs(List<MGameRatingEntity> ratingEntityList) {
-        for (MGameRatingEntity ratingEntityItem : ratingEntityList) {
+    private void getLogoURIs(List<MGameRating> ratingList) {
+        for (MGameRating ratingItem : ratingList) {
             ImageResolution[] resolutionValues = ImageResolution.values();
             for (int i = 1; i < resolutionValues.length; i++) {
                 if (
-                        ImageResolution.hasFlag(logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
-                        ImageResolution.hasFlag(logoResolutionConfiguration, resolutionValues[i])
+                        ImageResolution.hasFlag(this.logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
+                        ImageResolution.hasFlag(this.logoResolutionConfiguration, resolutionValues[i])
                 ) {
                     String filename = FilenameFormatter.formatFilename(
                             FilenameFormat.RESOLUTION_NAME_FORMAT,
-                            new String[]{
+                            new String[] {
                                     resolutionValues[i].getSuffix(),
                                     "png"
                             }
@@ -137,88 +146,86 @@ public class GameRatingEntityService {
                     if (filename == null)
                         continue;
 
-                    String finalURI = StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.constructFullURI(
-                            environment,
+                    String finalURI = StaticResourcesPaths.GAME_RATING_LOGOS.constructFullURI(
+                            this.environment,
                             new String[] {
-                                    ratingEntityItem.getName(),
+                                    ratingItem.getName(),
                                     filename
                             }
                     );
 
                     if (finalURI != null)
-                        ratingEntityItem.getLogoURIList().add(finalURI);
+                        ratingItem.getLogoURIList().add(finalURI);
                 }
             }
         }
     }
 
     // -- PUBLIC --
-    @Autowired
-    public GameRatingEntityService(GameRatingEntityMapper ratingEntityMapper) {
-        this.ratingEntityMapper = ratingEntityMapper;
+    public GameRatingService(GameRatingMapper ratingMapper) {
+        this.ratingMapper = ratingMapper;
     }
 
-    // CUD
-    public boolean create(@NotNull GameRatingEntity gameRatingEntity, @NotNull MultipartFile logoImage) {
-        GameRatingEntity newItem = null;
+    // CRUD
+    public boolean create(@NotNull GameRating rating, @NotNull MultipartFile logo) {
+        GameRating newItem = null;
         try {
-            ratingEntityRepository.save(gameRatingEntity);
-            newItem = ratingEntityRepository.findByName(gameRatingEntity.getName());
+            ratingRepository.save(rating);
+            newItem = ratingRepository.findByName(rating.getName());
 
-            if (!this.uploadEntityLogo(logoImage, newItem.getId())) {
-                ratingEntityRepository.delete(newItem);
+            if (!this.uploadEntityLogo(logo, newItem.getId())) {
+                ratingRepository.delete(newItem);
                 return false;
             }
             return true;
-        } catch(Exception e) {
-            if (newItem != null) ratingEntityRepository.delete(newItem);
+        } catch (Exception e) {
+            if (newItem != null) ratingRepository.delete(newItem);
             return false;
         }
     }
 
-    public boolean update(@NotNull GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
+    public boolean update(@NotNull GameRating rating, MultipartFile logo) {
         try {
-            GameRatingEntity ratingEntityToUpdate = ratingEntityRepository.findById(gameRatingEntity.getId());
-
+            GameRating ratingToUpdate = ratingRepository.findById(rating.getId());
             if (
-                    !(logoImage.isEmpty()) &&
-                    (ratingEntityToUpdate == null || !this.uploadEntityLogo(logoImage, ratingEntityToUpdate.getId()))
+                    !logo.isEmpty() &&
+                    (ratingToUpdate == null || !this.uploadEntityLogo(logo, ratingToUpdate.getId()))
             )
                 return false;
 
-            ratingEntityMapper.partialUpdateRatingEntity(ratingEntityToUpdate, gameRatingEntity);
+            ratingMapper.partialUpdateRating(ratingToUpdate, rating);
 
-            ratingEntityRepository.save(ratingEntityToUpdate);
+            ratingRepository.save(ratingToUpdate);
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
 
     public boolean delete(UUID id) {
         try {
-            GameRatingEntity gameRatingEntity = ratingEntityRepository.findById(id);
-            gameRatingEntity.setDeletedAt(new Date());
+            GameRating rating = ratingRepository.findById(id);
+            rating.setDeletedAt(new Date());
 
-            ratingEntityRepository.save(gameRatingEntity);
+            ratingRepository.save(rating);
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
 
     // Queries
     public ResponseEntity<Resource> getLogoImage(String name, String filename) {
-        GameRatingEntity ratingEntity = ratingEntityRepository.findByName(name);
-        if (ratingEntity == null)
+        GameRating rating = ratingRepository.findByName(name);
+        if (rating == null)
             return ResponseEntity.notFound().build();
 
         Path filePath;
         try {
             filePath = Objects.requireNonNull(
                             ResourcePathProvider
-                                    .getPathOfEntity(ResourcePaths.GAME_RATING_ENTITIES, ratingEntity.getId().toString())
-                    ).resolve(filename);
+                                    .getPathOfEntity(ResourcePaths.GAME_RATING, rating.getId().toString())
+            ).resolve(filename);
         } catch(Exception e) {
             return ResponseEntity.notFound().build();
         }
@@ -240,26 +247,39 @@ public class GameRatingEntityService {
                             "inline; filename=\"" +
                                     resource.getFilename() + "\""
                     ).body(resource);
-        } catch (Exception e) {
+        } catch(Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
 
-    public MGameRatingEntity getByName(String name) {
+    public MGameRating getByName(String name) {
+        GameRating rating = ratingRepository.findByName(name);
+        if (rating == null || rating.getDeletedAt() != null)
+            return null;
+
+        MGameRating mRating = new MGameRating(rating, true);
+        this.getLogoURIs(List.of(mRating));
+        return mRating;
+    }
+
+    public List<MGameRating> getByGameRatingEntity(String name, Pageable pageable) {
         GameRatingEntity ratingEntity = ratingEntityRepository.findByName(name);
         if (ratingEntity == null || ratingEntity.getDeletedAt() != null)
             return null;
 
-        MGameRatingEntity mRatingEntity = new MGameRatingEntity(ratingEntity);
-        this.getLogoURIs(List.of(mRatingEntity));
-        return mRatingEntity;
+        List<MGameRating> results = ratingConverter.parseToList(
+                ratingRepository.findByGameRatingEntity(ratingEntity, pageable).getContent()
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
+        this.getLogoURIs(results);
+        return results;
     }
 
-    public List<MGameRatingEntity> getAll(Pageable pageable) {
-        List<MGameRatingEntity> results = ratingEntityConverter
-                .parseToList(ratingEntityRepository.findAll(pageable).getContent());
+    public List<MGameRating> getAll(Pageable pageable) {
+        List<MGameRating> results = ratingConverter.parseToList(
+                ratingRepository.findAll(pageable).getContent()
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
         this.getLogoURIs(results);
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
+        return results;
     }
 
 }
