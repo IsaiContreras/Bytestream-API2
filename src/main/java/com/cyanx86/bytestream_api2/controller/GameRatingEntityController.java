@@ -38,7 +38,7 @@ public class GameRatingEntityController {
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean addNewRatingEntity(
             @RequestPart("data") @Validated String gameRatingEntity,
-            @RequestPart("logo") MultipartFile logoImage
+            @RequestParam("logo") MultipartFile logoImage
     )  {
         GameRatingEntity gameRatingEntityObject;
         try {

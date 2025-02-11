@@ -100,20 +100,18 @@ public class GameRatingDescriptorService {
     }
 
     public List<MGameRatingDescriptor> getByRatingEntity(String name, Pageable pageable) {
-        List<MGameRatingDescriptor> results = ratingDescriptorConverter.parseToList(
+        return ratingDescriptorConverter.parseToList(
                 ratingDescriptorRepository.findByGameRatingEntity(
-                    ratingEntityRepository.findByName(name),
-                    pageable
+                        ratingEntityRepository.findByName(name),
+                        pageable
                 ).getContent()
-        );
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
     public List<MGameRatingDescriptor> getAll(Pageable pageable) {
-        List<MGameRatingDescriptor> results = ratingDescriptorConverter.parseToList(
+        return ratingDescriptorConverter.parseToList(
                 ratingDescriptorRepository.findAll(pageable).getContent()
-        );
-        return results.stream().filter(item -> item.getDeletedAt() == null).toList();
+        ).stream().filter(item -> item.getDeletedAt() == null).toList();
     }
 
 }

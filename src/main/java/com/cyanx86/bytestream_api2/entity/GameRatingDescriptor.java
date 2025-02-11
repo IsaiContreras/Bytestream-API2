@@ -26,7 +26,7 @@ public class GameRatingDescriptor implements Serializable {
     @Column(name="name", unique=true, nullable=false, length=31)
     private String name;
 
-    @Column(name="description", nullable=false, length=63)
+    @Column(name="description", nullable=false, length=1023)
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)

@@ -8,7 +8,8 @@ import java.util.Objects;
 public enum StaticResourcesPaths {
 
     // -- [[ VALUES ]] --
-    GAME_RATING_ENTITY_LOGOS("/public/media/rating_entity/");
+    GAME_RATING_ENTITY_LOGOS("/public/media/rating_entity/"),
+    GAME_RATING_LOGOS("/public/media/rating/");
 
     // -- [[ ATTRIBUTES ]] --
 

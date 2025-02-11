@@ -95,6 +95,9 @@ public class MGameRatingEntity {
     public String getDescription() {
         return this.description;
     }
+    public List<String> getLogoURIList() {
+        return this.logoURIList;
+    }
     public Date getCreatedAt() {
         return this.createdAt;
     }
@@ -103,9 +106,6 @@ public class MGameRatingEntity {
     }
     public Date getDeletedAt() {
         return this.deletedAt;
-    }
-    public List<String> getLogoURIList() {
-        return this.logoURIList;
     }
 
 }
