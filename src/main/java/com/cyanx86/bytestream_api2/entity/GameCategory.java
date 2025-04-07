@@ -7,10 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="game_categories")
@@ -37,10 +34,6 @@ public class GameCategory implements Serializable {
     @Column(name="deleted_at") @Temporal(TemporalType.TIMESTAMP) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME)
     private Date deletedAt;
 
-    // Relations
-    @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
-    private List<Game> games;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -55,8 +48,6 @@ public class GameCategory implements Serializable {
         this.createdAt = gameCategory.getCreatedAt();
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
-
-        this.games = gameCategory.getGames();
     }
     public GameCategory(@NotNull String name) {
         this.name = name;
@@ -65,7 +56,10 @@ public class GameCategory implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    public void setDeletedAt(Date deletedAt) { this.deletedAt = deletedAt; }
+
+    public void setDeletedAt(Date deletedAt) {
+        this.deletedAt = deletedAt;
+    }
 
     public UUID getId() {
         return this.id;
@@ -73,6 +67,7 @@ public class GameCategory implements Serializable {
     public String getName() {
         return this.name;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }
@@ -81,10 +76,6 @@ public class GameCategory implements Serializable {
     }
     public Date getDeletedAt() {
         return this.deletedAt;
-    }
-
-    public List<Game> getGames() {
-        return (this.games == null) ? null : new ArrayList<>(this.games);
     }
 
 }

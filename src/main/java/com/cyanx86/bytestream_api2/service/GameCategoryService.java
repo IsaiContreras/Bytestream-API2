@@ -63,6 +63,8 @@ public class GameCategoryService {
     public boolean update(GameCategory gameCategory) {
         try {
             GameCategory categoryToUpdate = gameCategoryRepository.findById(gameCategory.getId());
+            if (categoryToUpdate == null)
+                return false;
 
             categoryMapper.partialUpdateCategory(categoryToUpdate, gameCategory);
 
@@ -79,6 +81,15 @@ public class GameCategoryService {
             category.setDeletedAt(new Date());
 
             gameCategoryRepository.save(category);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean hardDelete(UUID id) {
+        try {
+            gameCategoryRepository.delete(gameCategoryRepository.findById(id));
             return true;
         } catch (Exception e) {
             return false;

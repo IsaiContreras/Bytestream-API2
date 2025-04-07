@@ -1,6 +1,5 @@
 package com.cyanx86.bytestream_api2.model;
 
-import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameRating;
 import org.jetbrains.annotations.NotNull;
 
@@ -78,9 +77,11 @@ public class MGameRating {
     public String getDescription() {
         return this.description;
     }
+
     public List<String> getLogoURIList() {
         return this.logoURIList;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

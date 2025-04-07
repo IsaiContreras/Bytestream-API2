@@ -1,5 +1,6 @@
 package com.cyanx86.bytestream_api2.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -112,6 +113,7 @@ public class GameRatingEntity implements Serializable {
     public String getDescription() {
         return this.description;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

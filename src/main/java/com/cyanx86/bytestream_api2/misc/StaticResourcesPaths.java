@@ -9,7 +9,10 @@ public enum StaticResourcesPaths {
 
     // -- [[ VALUES ]] --
     GAME_RATING_ENTITY_LOGOS("/public/media/rating_entity/"),
-    GAME_RATING_LOGOS("/public/media/rating/");
+    GAME_RATING_LOGOS("/public/media/rating/"),
+    GAME_LOGO("/public/media/game_logo/"),
+    GAME_COVER("/public/media/game_cover/"),
+    GAME_LANDSCAPE("/public/media/game_landscape/");
 
     // -- [[ ATTRIBUTES ]] --
 
@@ -43,6 +46,29 @@ public enum StaticResourcesPaths {
         }
 
         return uri.toString();
+    }
+
+    public static StaticResourcesPaths getByResourcePath(ResourcePath resourcePath) {
+        switch (resourcePath) {
+            case GAME_RATING_ENTITIES -> {
+                return GAME_RATING_ENTITY_LOGOS;
+            }
+            case GAME_RATING -> {
+                return GAME_RATING_LOGOS;
+            }
+            case GAME_LOGO_ART -> {
+                return GAME_LOGO;
+            }
+            case GAME_COVER_ART -> {
+                return GAME_COVER;
+            }
+            case GAME_LANDSCAPE_ART -> {
+                return GAME_LANDSCAPE;
+            }
+            default -> {
+                return null;
+            }
+        }
     }
 
 }

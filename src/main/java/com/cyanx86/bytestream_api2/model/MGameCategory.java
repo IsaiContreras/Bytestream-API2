@@ -1,12 +1,9 @@
 package com.cyanx86.bytestream_api2.model;
 
-import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameCategory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 public class MGameCategory {
@@ -58,6 +55,7 @@ public class MGameCategory {
     public String getName() {
         return this.name;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

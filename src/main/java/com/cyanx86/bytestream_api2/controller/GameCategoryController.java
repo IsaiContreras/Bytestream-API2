@@ -53,6 +53,13 @@ public class GameCategoryController {
         return this.gameCategoryService.delete(id);
     }
 
+    @DeleteMapping("/harddelete")
+    public boolean hardDeleteGameCategory(
+            @RequestParam("id") UUID id
+    ) {
+        return gameCategoryService.hardDelete(id);
+    }
+
     // Queries
     @GetMapping("/get/byname")
     public MGameCategory getByName(

@@ -33,10 +33,11 @@ public class GameRatingController {
     // -- PRIVATE --
 
     // -- PUBLIC --
+    // CUD
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean addNewRating(
             @RequestPart("data") @Validated String gameRating,
-            @RequestParam("logo") MultipartFile logoImage
+            @RequestPart("logo") MultipartFile logoImage
     ) {
         GameRating gameRatingObject;
         try {
@@ -49,7 +50,7 @@ public class GameRatingController {
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean updateRating(
             @RequestPart("data") @Validated String gameRating,
-            @RequestParam("logo") MultipartFile logoImage
+            @RequestPart("logo") MultipartFile logoImage
     ) {
         GameRating gameRatingObject;
         try {
@@ -66,6 +67,14 @@ public class GameRatingController {
         return ratingService.delete(id);
     }
 
+    @DeleteMapping("/harddelete")
+    public boolean hardDeleteRating(
+            @RequestParam("id") UUID id
+    ) {
+        return ratingService.hardDelete(id);
+    }
+
+    // Queries
     @GetMapping("/get/byname")
     public MGameRating getByName(
             @RequestParam("name") String name

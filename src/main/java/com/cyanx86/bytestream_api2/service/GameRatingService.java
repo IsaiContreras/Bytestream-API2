@@ -6,7 +6,7 @@ import com.cyanx86.bytestream_api2.entity.GameRating;
 import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
 import com.cyanx86.bytestream_api2.misc.FilenameFormat;
 import com.cyanx86.bytestream_api2.misc.ImageResolution;
-import com.cyanx86.bytestream_api2.misc.ResourcePaths;
+import com.cyanx86.bytestream_api2.misc.ResourcePath;
 import com.cyanx86.bytestream_api2.misc.StaticResourcesPaths;
 import com.cyanx86.bytestream_api2.model.MGameRating;
 import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -78,85 +79,31 @@ public class GameRatingService {
     // -- [[ METHODS ]] --
 
     // -- PRIVATE --
-    private boolean uploadEntityLogo(MultipartFile image, UUID id) {
-        BufferedImage originalImage;
-        try {
-            originalImage = DataConverter.byteArrayToImage(image.getBytes());
-        } catch (Exception e) { return false; }
-
-        BufferedImage[] rescaledImages;
-        try {
-            rescaledImages = ImageResourceManager.getResizedImageInstances(
-                    originalImage,
-                    this.logoResolutionConfiguration
-            );
-        } catch (Exception e) { return false; }
-
-        String extension = Objects.requireNonNull(image.getContentType()).split("/")[1];
-        Path storageDestination = ResourcePathProvider.getPathOfEntity(
-                ResourcePaths.GAME_RATING, id.toString()
-        );
-        if (storageDestination == null)
-            return false;
-
-        for (BufferedImage rescaledItem : rescaledImages) {
-            String suffix;
-            if (rescaledItem.getWidth() == originalImage.getWidth())
-                suffix = "full";
-            else {
-                try {
-                    suffix = Objects.requireNonNull(
-                            Arrays.stream(ImageResolution.values())
-                                    .filter(resolution -> resolution.getWidth() == rescaledItem.getWidth())
-                                    .findFirst()
-                                    .orElse(null)
-                    ).getSuffix();
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-
-            String filename = FilenameFormatter.formatFilename(
-                    FilenameFormat.RESOLUTION_NAME_FORMAT,
-                    new String[]{suffix, extension}
-            );
-            if (filename == null)
-                return false;
-            if (!ImageResourceManager.storeFile(storageDestination, filename, rescaledItem, extension))
-                return false;
-        }
-        return true;
-    }
 
     private void getLogoURIs(List<MGameRating> ratingList) {
         for (MGameRating ratingItem : ratingList) {
-            ImageResolution[] resolutionValues = ImageResolution.values();
-            for (int i = 1; i < resolutionValues.length; i++) {
-                if (
-                        ImageResolution.hasFlag(this.logoResolutionConfiguration, ImageResolution.ALL_RESOLUTIONS) ||
-                        ImageResolution.hasFlag(this.logoResolutionConfiguration, resolutionValues[i])
-                ) {
-                    String filename = FilenameFormatter.formatFilename(
-                            FilenameFormat.RESOLUTION_NAME_FORMAT,
-                            new String[] {
-                                    resolutionValues[i].getSuffix(),
-                                    "png"
-                            }
-                    );
-                    if (filename == null)
-                        continue;
+            File[] files;
+            try {
+                files = new File(
+                        Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
+                                ResourcePath.GAME_RATING,
+                                ratingItem.getId().toString()
+                        )).toString()
+                ).listFiles();
+            } catch (Exception e) { return; }
+            if (files == null)
+                return;
 
-                    String finalURI = StaticResourcesPaths.GAME_RATING_LOGOS.constructFullURI(
-                            this.environment,
-                            new String[] {
-                                    ratingItem.getName(),
-                                    filename
-                            }
-                    );
-
-                    if (finalURI != null)
-                        ratingItem.getLogoURIList().add(finalURI);
-                }
+            for(File fileItem : files) {
+                ratingItem.getLogoURIList().add(
+                        StaticResourcesPaths.GAME_RATING_LOGOS.constructFullURI(
+                                environment,
+                                new String[] {
+                                        ratingItem.getName(),
+                                        fileItem.getName()
+                                }
+                        )
+                );
             }
         }
     }
@@ -170,10 +117,15 @@ public class GameRatingService {
     public boolean create(@NotNull GameRating rating, @NotNull MultipartFile logo) {
         GameRating newItem = null;
         try {
-            ratingRepository.save(rating);
-            newItem = ratingRepository.findByName(rating.getName());
+            rating.setGameRatingEntity(ratingEntityRepository.findByName(
+                    rating.getGameRatingEntity() != null ? rating.getGameRatingEntity().getName() : null
+            ));
 
-            if (!this.uploadEntityLogo(logo, newItem.getId())) {
+            newItem = ratingRepository.save(rating);
+
+            if (!ImageResourceManager.uploadImageFile(
+                    logo, newItem.getId(), ResourcePath.GAME_RATING, this.logoResolutionConfiguration
+            )) {
                 ratingRepository.delete(newItem);
                 return false;
             }
@@ -189,9 +141,18 @@ public class GameRatingService {
             GameRating ratingToUpdate = ratingRepository.findById(rating.getId());
             if (
                     !logo.isEmpty() &&
-                    (ratingToUpdate == null || !this.uploadEntityLogo(logo, ratingToUpdate.getId()))
+                    (ratingToUpdate == null || !ImageResourceManager.uploadImageFile(
+                            logo,
+                            ratingToUpdate.getId(),
+                            ResourcePath.GAME_RATING,
+                            this.logoResolutionConfiguration
+                    ))
             )
                 return false;
+
+            rating.setGameRatingEntity(ratingEntityRepository.findByName(
+                    rating.getGameRatingEntity() != null ? rating.getGameRatingEntity().getName() : null
+            ));
 
             ratingMapper.partialUpdateRating(ratingToUpdate, rating);
 
@@ -214,6 +175,15 @@ public class GameRatingService {
         }
     }
 
+    public boolean hardDelete(UUID id) {
+        try {
+            ratingRepository.delete(ratingRepository.findById(id));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     // Queries
     public ResponseEntity<Resource> getLogoImage(String name, String filename) {
         GameRating rating = ratingRepository.findByName(name);
@@ -224,7 +194,7 @@ public class GameRatingService {
         try {
             filePath = Objects.requireNonNull(
                             ResourcePathProvider
-                                    .getPathOfEntity(ResourcePaths.GAME_RATING, rating.getId().toString())
+                                    .getPathOfEntity(ResourcePath.GAME_RATING, rating.getId().toString())
             ).resolve(filename);
         } catch(Exception e) {
             return ResponseEntity.notFound().build();

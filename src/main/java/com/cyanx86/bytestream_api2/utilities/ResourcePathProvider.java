@@ -1,6 +1,6 @@
 package com.cyanx86.bytestream_api2.utilities;
 
-import com.cyanx86.bytestream_api2.misc.ResourcePaths;
+import com.cyanx86.bytestream_api2.misc.ResourcePath;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
@@ -19,10 +19,10 @@ public class ResourcePathProvider {
     // -- PRIVATE --
 
     // -- PUBLIC --
-    public static Path getPathOfEntity(@NotNull ResourcePaths mediaEntity, String folder) {
+    public static Path getPathOfEntity(@NotNull ResourcePath mediaEntity, String folder) {
         Path result;
         try {
-            result = Path.of(Objects.requireNonNull(ResourcePaths.ROOT.getValue()))
+            result = Path.of(Objects.requireNonNull(ResourcePath.ROOT.getPath()))
                     .resolve(mediaEntity.getPath());
         } catch (Exception e) { return null; }
 

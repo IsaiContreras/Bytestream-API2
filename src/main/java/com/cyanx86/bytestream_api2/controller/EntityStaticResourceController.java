@@ -1,7 +1,9 @@
 package com.cyanx86.bytestream_api2.controller;
 
+import com.cyanx86.bytestream_api2.misc.ResourcePath;
 import com.cyanx86.bytestream_api2.service.GameRatingEntityService;
 import com.cyanx86.bytestream_api2.service.GameRatingService;
+import com.cyanx86.bytestream_api2.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.Resource;
@@ -26,6 +28,10 @@ public class EntityStaticResourceController {
     @Qualifier("game_rating_service")
     private GameRatingService ratingService;
 
+    @Autowired
+    @Qualifier("game_service")
+    private GameService gameService;
+
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -47,6 +53,30 @@ public class EntityStaticResourceController {
             @PathVariable("filename") String filename
     ) {
         return ratingService.getLogoImage(name, filename);
+    }
+
+    @GetMapping("/game_logo/{name}/{filename}")
+    public ResponseEntity<Resource> gameLogoImage(
+            @PathVariable("name") String name,
+            @PathVariable("filename") String filename
+    ) {
+        return gameService.getImage(ResourcePath.GAME_LOGO_ART, name, filename);
+    }
+
+    @GetMapping("/game_cover/{name}/{filename}")
+    public ResponseEntity<Resource> gameCoverImage(
+            @PathVariable("name") String name,
+            @PathVariable("filename") String filename
+    ) {
+        return gameService.getImage(ResourcePath.GAME_COVER_ART, name, filename);
+    }
+
+    @GetMapping("/game_landscape/{name}/{filename}")
+    public ResponseEntity<Resource> gameLandscapeImage(
+            @PathVariable("name") String name,
+            @PathVariable("filename") String filename
+    ) {
+        return gameService.getImage(ResourcePath.GAME_LANDSCAPE_ART, name, filename);
     }
 
 }

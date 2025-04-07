@@ -1,7 +1,5 @@
 package com.cyanx86.bytestream_api2.model;
 
-import com.cyanx86.bytestream_api2.entity.GameRating;
-import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
 import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,7 +20,7 @@ public class MGameRatingEntity {
     private String location;
     private String description;
 
-    private final List<String> logoURIList = new ArrayList<>();
+    private List<String> logoURIList = new ArrayList<>();
 
     private Date createdAt;
     private Date updatedAt;
@@ -53,6 +51,8 @@ public class MGameRatingEntity {
         this.longName = gameRatingEntity.getLongName();
         this.location = gameRatingEntity.getLocation();
         this.description = gameRatingEntity.getDescription();
+
+        this.logoURIList = gameRatingEntity.getLogoURIList();
 
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
@@ -95,9 +95,11 @@ public class MGameRatingEntity {
     public String getDescription() {
         return this.description;
     }
+
     public List<String> getLogoURIList() {
         return this.logoURIList;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

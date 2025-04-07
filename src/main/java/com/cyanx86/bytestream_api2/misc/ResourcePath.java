@@ -3,7 +3,7 @@ package com.cyanx86.bytestream_api2.misc;
 import com.cyanx86.bytestream_api2.configuration.ResourcePathsConfigurer;
 import org.jetbrains.annotations.NotNull;
 
-public enum ResourcePaths {
+public enum ResourcePath {
 
     // -- [[ VALUES ]] --
     ROOT("upload.path"),
@@ -16,8 +16,8 @@ public enum ResourcePaths {
     // -- [[ ATTRIBUTES ]] --
 
     // -- PRIVATE --
-    private final String path;
-    private String value = null;
+    private final String key;
+    private String path = null;
 
     // -- PUBLIC --
 
@@ -26,20 +26,20 @@ public enum ResourcePaths {
     // -- PRIVATE --
 
     // -- PUBLIC --
-    ResourcePaths(@NotNull String path) {
-        this.path = path;
+    ResourcePath(@NotNull String path) {
+        this.key = path;
+    }
+
+    public String getKey() {
+        return this.key;
+    }
+
+    public void setPath(@NotNull ResourcePathsConfigurer configurer, @NotNull String value) {
+        this.path = value;
     }
 
     public String getPath() {
         return this.path;
-    }
-
-    public void setValue(@NotNull ResourcePathsConfigurer configurer, @NotNull String value) {
-        this.value = value;
-    }
-
-    public String getValue() {
-        return this.value;
     }
 
 }

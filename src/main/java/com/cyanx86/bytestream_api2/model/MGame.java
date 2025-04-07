@@ -6,10 +6,7 @@ import com.cyanx86.bytestream_api2.entity.GameRating;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class MGame {
 
@@ -21,6 +18,11 @@ public class MGame {
     private String title;
     private String name;
     private String synopsis;
+    private Date releaseDate;
+
+    private List<String> logoURIList = new ArrayList<>();
+    private List<String> coverURIList = new ArrayList<>();
+    private List<String> landscapeURIList = new ArrayList<>();
 
     private Date createdAt;
     private Date updatedAt;
@@ -45,6 +47,7 @@ public class MGame {
         this.title = game.getTitle();
         this.name = game.getName();
         this.synopsis = game.getSynopsis();
+        this.releaseDate = game.getReleaseDate();
 
         this.createdAt = game.getCreatedAt();
         this.updatedAt = game.getUpdatedAt();
@@ -69,6 +72,7 @@ public class MGame {
         this.name = game.getName();
         this.title = game.getTitle();
         this.synopsis = game.getSynopsis();
+        this.releaseDate = game.getReleaseDate();
 
         this.createdAt = game.getCreatedAt();
         this.updatedAt = game.getUpdatedAt();
@@ -78,10 +82,11 @@ public class MGame {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public MGame(@NotNull String name, @NotNull String title, @NotNull String synopsis) {
+    public MGame(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
     }
 
     public void setName(@NotNull String name) {
@@ -92,6 +97,19 @@ public class MGame {
     }
     public void setSynopsis(@NotNull String synopsis) {
         this.synopsis = synopsis;
+    }
+    public void setReleaseDate(@NotNull Date releaseDate) {
+        this.releaseDate = releaseDate;
+    }
+
+    public void setLogoURIList(List<String> logoURIList) {
+        this.logoURIList = new ArrayList<>(logoURIList);
+    }
+    public void setCoverURIList(List<String> coverURIList) {
+        this.coverURIList = new ArrayList<>(coverURIList);
+    }
+    public void setLandscapeURIList(List<String> landscapeURIList) {
+        this.landscapeURIList = new ArrayList<>(landscapeURIList);
     }
 
     public UUID getId() {
@@ -106,6 +124,20 @@ public class MGame {
     public String getSynopsis() {
         return this.synopsis;
     }
+    public Date getReleaseDate() {
+        return this.releaseDate;
+    }
+
+    public List<String> getLogoURIList() {
+        return this.logoURIList;
+    }
+    public List<String> getCoverURIList() {
+        return this.coverURIList;
+    }
+    public List<String> getLandscapeURIList() {
+        return this.landscapeURIList;
+    }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

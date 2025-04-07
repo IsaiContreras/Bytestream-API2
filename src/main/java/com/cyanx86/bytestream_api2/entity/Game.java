@@ -1,5 +1,6 @@
 package com.cyanx86.bytestream_api2.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -7,10 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="games")
@@ -29,8 +27,12 @@ public class Game implements Serializable {
     @Column(name="title", nullable=false, length=63)
     private String title;
 
-    @Column(name="synopsis", nullable=false, length=1023)
+    @Column(name="synopsis", nullable=false, length=4095)
     private String synopsis;
+
+    @Column(name="release_date", nullable=false)
+    @Temporal(TemporalType.DATE) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
+    private Date releaseDate;
 
     @Column(name="created_at", nullable=false, updatable=false)
     @Temporal(TemporalType.TIMESTAMP) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE_TIME) @CreationTimestamp
@@ -44,13 +46,28 @@ public class Game implements Serializable {
     private Date deletedAt;
 
     // Relations
-    @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="games")
+    @ManyToMany
+    @JoinTable(
+            name="game_categories_games",
+            joinColumns = @JoinColumn(name="game_id"),
+            inverseJoinColumns = @JoinColumn(name="catego_id")
+    )
     private List<GameCategory> gameCategories;
 
-    @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="games")
+    @ManyToMany
+    @JoinTable(
+            name="game_ratings_games",
+            joinColumns = @JoinColumn(name="game_id"),
+            inverseJoinColumns = @JoinColumn(name="rating_id")
+    )
     private List<GameRating> gameRatings;
 
-    @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL, mappedBy="games")
+    @ManyToMany
+    @JoinTable(
+            name="game_rating_descriptors_games",
+            joinColumns = @JoinColumn(name="game_id"),
+            inverseJoinColumns = @JoinColumn(name="r_descriptor_id")
+    )
     private List<GameRatingDescriptor> gameRatingDescriptors;
 
     // -- PUBLIC --
@@ -66,6 +83,7 @@ public class Game implements Serializable {
         this.name = game.getName();
         this.title = game.getTitle();
         this.synopsis = game.getSynopsis();
+        this.releaseDate = game.getReleaseDate();
         this.createdAt = game.getCreatedAt();
         this.updatedAt = game.getUpdatedAt();
         this.deletedAt = game.getDeletedAt();
@@ -74,10 +92,11 @@ public class Game implements Serializable {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public Game(@NotNull String name, @NotNull String title, @NotNull String synopsis) {
+    public Game(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
     }
 
     public void setName(String name) {
@@ -89,18 +108,22 @@ public class Game implements Serializable {
     public void setSynopsis(String synopsis) {
         this.synopsis = synopsis;
     }
-    public void setGameCategories(List<GameCategory> gameCategories) {
-        this.gameCategories = gameCategories;
-    }
-    public void setGameRatings(List<GameRating> gameRatings) {
-        this.gameRatings = gameRatings;
-    }
-    public void setGameRatingDescriptors(List<GameRatingDescriptor> gameRatingDescriptors) {
-        this.gameRatingDescriptors = gameRatingDescriptors;
+    public void setReleaseDate(Date releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     public void setDeletedAt(Date deletedAt) {
         this.deletedAt = deletedAt;
+    }
+
+    public void setGameCategories(List<GameCategory> gameCategories) {
+        this.gameCategories = new ArrayList<>(gameCategories);
+    }
+    public void setGameRatings(List<GameRating> gameRatings) {
+        this.gameRatings = new ArrayList<>(gameRatings);
+    }
+    public void setGameRatingDescriptors(List<GameRatingDescriptor> gameRatingDescriptors) {
+        this.gameRatingDescriptors = new ArrayList<>(gameRatingDescriptors);
     }
 
     public UUID getId() {
@@ -113,6 +136,10 @@ public class Game implements Serializable {
     public String getSynopsis() {
         return this.synopsis;
     }
+    public Date getReleaseDate() {
+        return releaseDate;
+    }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

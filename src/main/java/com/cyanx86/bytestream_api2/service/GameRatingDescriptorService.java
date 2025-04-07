@@ -58,6 +58,13 @@ public class GameRatingDescriptorService {
     // CUD
     public boolean create(GameRatingDescriptor ratingDescriptor) {
         try {
+            ratingDescriptor.setGameRatingEntity(
+                    ratingEntityRepository.findByName(
+                            ratingDescriptor.getGameRatingEntity() != null ?
+                                    ratingDescriptor.getGameRatingEntity().getName() : null
+                    )
+            );
+
             this.ratingDescriptorRepository.save(ratingDescriptor);
             return true;
         } catch (Exception e) {
@@ -68,6 +75,15 @@ public class GameRatingDescriptorService {
     public boolean update(GameRatingDescriptor ratingDescriptor) {
         try {
             GameRatingDescriptor descriptorToUpdate = ratingDescriptorRepository.findById(ratingDescriptor.getId());
+            if (descriptorToUpdate == null)
+                return false;
+
+            ratingDescriptor.setGameRatingEntity(
+                    ratingEntityRepository.findByName(
+                            ratingDescriptor.getGameRatingEntity() != null ?
+                                    ratingDescriptor.getGameRatingEntity().getName() : null
+                    )
+            );
 
             ratingDescriptorMapper.partialUpdateRatingDescriptor(descriptorToUpdate, ratingDescriptor);
 
@@ -84,6 +100,15 @@ public class GameRatingDescriptorService {
             ratingDescriptor.setDeletedAt(new Date());
 
             ratingDescriptorRepository.save(ratingDescriptor);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean hardDelete(UUID id) {
+        try {
+            ratingDescriptorRepository.delete(ratingDescriptorRepository.findById(id));
             return true;
         } catch (Exception e) {
             return false;

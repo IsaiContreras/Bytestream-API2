@@ -1,12 +1,9 @@
 package com.cyanx86.bytestream_api2.model;
 
-import com.cyanx86.bytestream_api2.entity.Game;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 public class MGameRatingDescriptor {
@@ -77,6 +74,7 @@ public class MGameRatingDescriptor {
     public String getDescription() {
         return this.description;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }

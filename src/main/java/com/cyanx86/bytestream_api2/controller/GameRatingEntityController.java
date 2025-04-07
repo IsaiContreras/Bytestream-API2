@@ -38,7 +38,7 @@ public class GameRatingEntityController {
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean addNewRatingEntity(
             @RequestPart("data") @Validated String gameRatingEntity,
-            @RequestParam("logo") MultipartFile logoImage
+            @RequestPart("logo") MultipartFile logoImage
     )  {
         GameRatingEntity gameRatingEntityObject;
         try {
@@ -51,7 +51,7 @@ public class GameRatingEntityController {
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public boolean updateRatingEntity (
             @RequestPart("data") @Validated String gameRatingEntity,
-            @RequestParam("logo") MultipartFile logoImage
+            @RequestPart("logo") MultipartFile logoImage
     ) {
         GameRatingEntity gameRatingEntityObject;
         try {
@@ -66,6 +66,13 @@ public class GameRatingEntityController {
             @RequestParam("id") UUID id
     ) {
         return ratingEntityService.delete(id);
+    }
+
+    @DeleteMapping("/harddelete")
+    public boolean hardDeleteRatingEntity(
+            @RequestParam("id") UUID id
+    ) {
+        return ratingEntityService.hardDelete(id);
     }
 
     // Queries

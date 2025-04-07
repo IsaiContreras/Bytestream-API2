@@ -1,6 +1,6 @@
 package com.cyanx86.bytestream_api2.configuration;
 
-import com.cyanx86.bytestream_api2.misc.ResourcePaths;
+import com.cyanx86.bytestream_api2.misc.ResourcePath;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -20,11 +20,11 @@ public class ResourcePathsConfigurer {
 
     @PostConstruct
     public void initialize() {
-        for (ResourcePaths value : ResourcePaths.values()) {
+        for (ResourcePath value : ResourcePath.values()) {
             try {
-                value.setValue(
+                value.setPath(
                         this,
-                        Objects.requireNonNull(environment.getProperty(value.getPath()))
+                        Objects.requireNonNull(environment.getProperty(value.getKey()))
                 );
             } catch (Exception ignored) { } // TODO: LOGGER
         }

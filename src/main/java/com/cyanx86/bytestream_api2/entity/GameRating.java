@@ -1,5 +1,6 @@
 package com.cyanx86.bytestream_api2.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -7,10 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name="game_ratings")
@@ -45,9 +43,6 @@ public class GameRating implements Serializable {
     @JoinColumn(name="entity_id")
     private GameRatingEntity gameRatingEntity;
 
-    @ManyToMany(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
-    private List<Game> games;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
@@ -65,7 +60,6 @@ public class GameRating implements Serializable {
         this.deletedAt = gameRating.getDeletedAt();
 
         this.gameRatingEntity = gameRating.getGameRatingEntity();
-        this.games = gameRating.getGames();
     }
     public GameRating(@NotNull String name, @NotNull String description) {
         this.name = name;
@@ -93,6 +87,7 @@ public class GameRating implements Serializable {
     public String getDescription() {
         return this.description;
     }
+
     public Date getCreatedAt() {
         return this.createdAt;
     }
@@ -105,9 +100,6 @@ public class GameRating implements Serializable {
 
     public GameRatingEntity getGameRatingEntity() {
         return this.gameRatingEntity;
-    }
-    public List<Game> getGames() {
-        return (this.games == null) ? null : new ArrayList<>(this.games);
     }
 
 }
