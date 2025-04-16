@@ -18,7 +18,7 @@ public interface GameRatingEntityRepository
 {
 
     // -- [[ METHODS ]] --
-    public abstract GameRatingEntity findById(UUID id);
+    public abstract GameRatingEntity findById(Short id);
 
     public abstract GameRatingEntity findByName(String name);
 

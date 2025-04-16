@@ -19,7 +19,7 @@ public interface GameRatingDescriptorRepository
 {
 
     // -- [[ METHODS ]] --
-    public abstract GameRatingDescriptor findById(UUID id);
+    public abstract GameRatingDescriptor findById(Short id);
 
     public abstract GameRatingDescriptor findByName(String name);
 

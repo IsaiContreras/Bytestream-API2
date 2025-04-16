@@ -18,8 +18,8 @@ public class GameRatingEntity implements Serializable {
 
     // -- PRIVATE --
     // Columns
-    @Column(name="entity_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
-    private UUID id;
+    @Column(name="entity_id") @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=15)
     private String name;
@@ -98,7 +98,7 @@ public class GameRatingEntity implements Serializable {
         this.deletedAt = deletedAt;
     }
 
-    public UUID getId() {
+    public Short getId() {
         return this.id;
     }
     public String getName() {

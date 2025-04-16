@@ -12,7 +12,7 @@ public class MGameCategory {
 
     // -- PRIVATE --
     // Data
-    private UUID id;
+    private Short id;
     private String name;
 
     private Date createdAt;
@@ -49,7 +49,7 @@ public class MGameCategory {
         this.name = name;
     }
 
-    public UUID getId() {
+    public Short getId() {
         return this.id;
     }
     public String getName() {

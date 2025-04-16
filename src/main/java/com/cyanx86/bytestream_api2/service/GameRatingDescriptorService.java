@@ -1,6 +1,6 @@
 package com.cyanx86.bytestream_api2.service;
 
-import com.cyanx86.bytestream_api2.component.GameRatingDescriptorMapper;
+import com.cyanx86.bytestream_api2.mapper.GameRatingDescriptorMapper;
 import com.cyanx86.bytestream_api2.converter.GameRatingDescriptorConverter;
 import com.cyanx86.bytestream_api2.entity.GameRatingDescriptor;
 import com.cyanx86.bytestream_api2.model.MGameRatingDescriptor;
@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service("game_rating_descriptor_service")
 public class GameRatingDescriptorService {
@@ -94,7 +93,7 @@ public class GameRatingDescriptorService {
         }
     }
 
-    public boolean delete(UUID id) {
+    public boolean delete(short id) {
         try {
             GameRatingDescriptor ratingDescriptor = ratingDescriptorRepository.findById(id);
             ratingDescriptor.setDeletedAt(new Date());
@@ -106,7 +105,7 @@ public class GameRatingDescriptorService {
         }
     }
 
-    public boolean hardDelete(UUID id) {
+    public boolean hardDelete(short id) {
         try {
             ratingDescriptorRepository.delete(ratingDescriptorRepository.findById(id));
             return true;

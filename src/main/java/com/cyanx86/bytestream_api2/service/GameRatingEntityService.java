@@ -1,7 +1,6 @@
 package com.cyanx86.bytestream_api2.service;
 
-import com.cyanx86.bytestream_api2.component.GameRatingEntityMapper;
-import com.cyanx86.bytestream_api2.utilities.FilenameFormatter;
+import com.cyanx86.bytestream_api2.mapper.GameRatingEntityMapper;
 import com.cyanx86.bytestream_api2.utilities.ImageResourceManager;
 import com.cyanx86.bytestream_api2.utilities.ResourcePathProvider;
 import com.cyanx86.bytestream_api2.converter.GameRatingEntityConverter;
@@ -9,7 +8,6 @@ import com.cyanx86.bytestream_api2.entity.GameRatingEntity;
 import com.cyanx86.bytestream_api2.misc.*;
 import com.cyanx86.bytestream_api2.model.MGameRatingEntity;
 import com.cyanx86.bytestream_api2.repository.GameRatingEntityRepository;
-import com.cyanx86.bytestream_api2.utilities.DataConverter;
 
 import jakarta.servlet.ServletContext;
 
@@ -29,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
@@ -76,7 +73,7 @@ public class GameRatingEntityService {
                 files = new File(
                         Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
                                 ResourcePath.GAME_RATING_ENTITIES,
-                                ratingEntityItem.getId().toString()
+                                String.valueOf(ratingEntityItem.getId())
                         )).toString()
                 ).listFiles();
             } catch (Exception e) { return; }
@@ -110,7 +107,8 @@ public class GameRatingEntityService {
             newItem = ratingEntityRepository.save(gameRatingEntity);
 
             if (!ImageResourceManager.uploadImageFile(
-                    logoImage, newItem.getId(), ResourcePath.GAME_RATING_ENTITIES, this.logoResolutionConfiguration
+                    logoImage, newItem.getId().toString(),
+                    ResourcePath.GAME_RATING_ENTITIES, this.logoResolutionConfiguration
             )) {
                 ratingEntityRepository.delete(newItem);
                 return false;
@@ -133,7 +131,7 @@ public class GameRatingEntityService {
                             ratingEntityToUpdate == null ||
                             !ImageResourceManager.uploadImageFile(
                                     logoImage,
-                                    ratingEntityToUpdate.getId(),
+                                    ratingEntityToUpdate.getId().toString(),
                                     ResourcePath.GAME_RATING_ENTITIES,
                                     this.logoResolutionConfiguration
                             )
@@ -150,7 +148,7 @@ public class GameRatingEntityService {
         }
     }
 
-    public boolean delete(UUID id) {
+    public boolean delete(short id) {
         try {
             GameRatingEntity gameRatingEntity = ratingEntityRepository.findById(id);
             gameRatingEntity.setDeletedAt(new Date());
@@ -162,7 +160,7 @@ public class GameRatingEntityService {
         }
     }
 
-    public boolean hardDelete(UUID id) {
+    public boolean hardDelete(short id) {
         try {
             ratingEntityRepository.delete(ratingEntityRepository.findById(id));
             return true;
@@ -181,8 +179,8 @@ public class GameRatingEntityService {
         try {
             filePath = Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
                     ResourcePath.GAME_RATING_ENTITIES,
-                    ratingEntity.getId().toString())
-            ).resolve(filename);
+                    String.valueOf(ratingEntity.getId())
+            )).resolve(filename);
         } catch(Exception e) {
             return ResponseEntity.notFound().build();
         }

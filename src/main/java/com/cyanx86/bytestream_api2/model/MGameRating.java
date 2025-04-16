@@ -14,7 +14,7 @@ public class MGameRating {
 
     // -- PRIVATE --
     // Data
-    private UUID id;
+    private Short id;
     private String name;
     private String description;
 
@@ -68,7 +68,7 @@ public class MGameRating {
         this.description = description;
     }
 
-    public UUID getId() {
+    public Short getId() {
         return this.id;
     }
     public String getName() {

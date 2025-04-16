@@ -71,14 +71,14 @@ public class GameController {
 
     @DeleteMapping("/delete")
     public boolean deleteGame(
-            @RequestParam("id") UUID id
+            @RequestParam("id") long id
     ) {
         return this.gameService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
     public boolean hardDeleteGame(
-            @RequestParam("id") UUID id
+            @RequestParam("id") long id
     ) {
         return this.gameService.hardDelete(id);
     }

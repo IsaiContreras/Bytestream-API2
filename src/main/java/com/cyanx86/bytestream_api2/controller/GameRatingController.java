@@ -62,14 +62,14 @@ public class GameRatingController {
 
     @DeleteMapping("/delete")
     public boolean deleteRating(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
     public boolean hardDeleteRating(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingService.hardDelete(id);
     }

@@ -18,8 +18,8 @@ public class Game implements Serializable {
 
     // -- PRIVATE --
     // Columns
-    @Column(name="game_id") @Id @GeneratedValue(strategy=GenerationType.UUID)
-    private UUID id;
+    @Column(name="game_id") @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name="name", unique=true, nullable=false, length=63)
     private String name;
@@ -126,10 +126,12 @@ public class Game implements Serializable {
         this.gameRatingDescriptors = new ArrayList<>(gameRatingDescriptors);
     }
 
-    public UUID getId() {
+    public Long getId() {
         return this.id;
     }
-    public String getName() { return this.name; }
+    public String getName() {
+        return this.name;
+    }
     public String getTitle() {
         return this.title;
     }

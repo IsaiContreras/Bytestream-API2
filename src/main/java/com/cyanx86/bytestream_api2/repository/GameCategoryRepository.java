@@ -18,7 +18,7 @@ public interface GameCategoryRepository
 {
 
     // -- [[ METHODS ]] --
-    public abstract GameCategory findById(UUID id);
+    public abstract GameCategory findById(Short id);
 
     public abstract GameCategory findByName(String name);
 

@@ -47,14 +47,14 @@ public class GameRatingDescriptorController {
 
     @DeleteMapping("/delete")
     public boolean deleteRatingDescriptor(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingDescriptorService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
     public boolean hardDeleteRatingDescriptor(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingDescriptorService.hardDelete(id);
     }

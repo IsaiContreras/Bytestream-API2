@@ -14,7 +14,7 @@ public class MGameRatingEntity {
 
     // -- PRIVATE --
     // Data
-    private UUID id;
+    private Short id;
     private String name;
     private String longName;
     private String location;
@@ -80,7 +80,7 @@ public class MGameRatingEntity {
         this.description = description;
     }
 
-    public UUID getId() {
+    public Short getId() {
         return this.id;
     }
     public String getName() {

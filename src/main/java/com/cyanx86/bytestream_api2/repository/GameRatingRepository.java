@@ -19,7 +19,7 @@ public interface GameRatingRepository
 {
 
     // -- [[ METHODS ]] --
-    public abstract GameRating findById(UUID id);
+    public abstract GameRating findById(Short id);
 
     public abstract GameRating findByName(String name);
 

@@ -1,4 +1,4 @@
-package com.cyanx86.bytestream_api2.component;
+package com.cyanx86.bytestream_api2.mapper;
 
 import com.cyanx86.bytestream_api2.entity.Game;
 import org.mapstruct.*;

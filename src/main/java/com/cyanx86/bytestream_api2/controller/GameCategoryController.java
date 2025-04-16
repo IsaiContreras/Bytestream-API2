@@ -48,14 +48,14 @@ public class GameCategoryController {
 
     @DeleteMapping("/delete")
     public boolean deleteGameCategory(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return this.gameCategoryService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
     public boolean hardDeleteGameCategory(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return gameCategoryService.hardDelete(id);
     }

@@ -97,7 +97,7 @@ public class ImageResourceManager {
 
     public static boolean uploadImageFile(
             MultipartFile multipartFile,
-            UUID entityID,
+            String entityID,
             ResourcePath destityPath,
             int resolutionConfiguration
     ) {
@@ -115,7 +115,7 @@ public class ImageResourceManager {
         } catch (Exception e) { return false; }
 
         Path storageDestination = ResourcePathProvider.getPathOfEntity(
-                destityPath, entityID.toString()
+                destityPath, entityID
         );
         if (storageDestination == null)
             return false;

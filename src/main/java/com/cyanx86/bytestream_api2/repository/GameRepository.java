@@ -27,7 +27,7 @@ public interface GameRepository
 {
 
     // -- [[ METHODS ]] --
-    public abstract Game findById(UUID id);
+    public abstract Game findById(Long id);
 
     public abstract Game findByName(String name);
 

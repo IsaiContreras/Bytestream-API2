@@ -1,6 +1,6 @@
 package com.cyanx86.bytestream_api2.service;
 
-import com.cyanx86.bytestream_api2.component.GameCategoryMapper;
+import com.cyanx86.bytestream_api2.mapper.GameCategoryMapper;
 import com.cyanx86.bytestream_api2.converter.GameCategoryConverter;
 import com.cyanx86.bytestream_api2.entity.GameCategory;
 import com.cyanx86.bytestream_api2.model.MGameCategory;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service("game_category_service")
 public class GameCategoryService {
@@ -75,7 +74,7 @@ public class GameCategoryService {
         }
     }
 
-    public boolean delete(UUID id) {
+    public boolean delete(short id) {
         try {
             GameCategory category = gameCategoryRepository.findById(id);
             category.setDeletedAt(new Date());
@@ -87,7 +86,7 @@ public class GameCategoryService {
         }
     }
 
-    public boolean hardDelete(UUID id) {
+    public boolean hardDelete(short id) {
         try {
             gameCategoryRepository.delete(gameCategoryRepository.findById(id));
             return true;

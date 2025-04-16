@@ -63,14 +63,14 @@ public class GameRatingEntityController {
 
     @DeleteMapping("/delete")
     public boolean deleteRatingEntity (
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingEntityService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
     public boolean hardDeleteRatingEntity(
-            @RequestParam("id") UUID id
+            @RequestParam("id") short id
     ) {
         return ratingEntityService.hardDelete(id);
     }

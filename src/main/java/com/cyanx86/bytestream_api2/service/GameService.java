@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.cyanx86.bytestream_api2.component.GameMapper;
+import com.cyanx86.bytestream_api2.mapper.GameMapper;
 import com.cyanx86.bytestream_api2.converter.GameConverter;
 import com.cyanx86.bytestream_api2.model.MGame;
 import com.cyanx86.bytestream_api2.repository.GameRepository;
@@ -100,7 +100,7 @@ public class GameService {
             try {
                 files = new File(
                         Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
-                                mediaType, gameItem.getId().toString()
+                                mediaType, String.valueOf(gameItem.getId())
                         )).toString()
                 ).listFiles();
             } catch (Exception e) { return; }
@@ -192,15 +192,15 @@ public class GameService {
             // Try to upload images.
             if(
                 !ImageResourceManager.uploadImageFile(
-                        logoImage, newItem.getId(),
+                        logoImage, newItem.getId().toString(),
                         ResourcePath.GAME_LOGO_ART, this.logoResolutionConfiguration
                 ) ||
                 !ImageResourceManager.uploadImageFile(
-                        coverImage, newItem.getId(),
+                        coverImage, newItem.getId().toString(),
                         ResourcePath.GAME_COVER_ART, this.coverResolutionConfiguration
                 ) ||
                 !ImageResourceManager.uploadImageFile(
-                        landscapeImage, newItem.getId(),
+                        landscapeImage, newItem.getId().toString(),
                         ResourcePath.GAME_LANDSCAPE_ART, this.landscapeResolutionConfiguration
                 )
             ) {
@@ -263,15 +263,15 @@ public class GameService {
                     !(logoImage.isEmpty() || coverImage.isEmpty() || landscapeImage.isEmpty()) &&
                     (
                             !ImageResourceManager.uploadImageFile(
-                                    logoImage, updateData.getId(),
+                                    logoImage, updateData.getId().toString(),
                                     ResourcePath.GAME_LOGO_ART, this.logoResolutionConfiguration
                             ) ||
                             !ImageResourceManager.uploadImageFile(
-                                    coverImage, updateData.getId(),
+                                    coverImage, updateData.getId().toString(),
                                     ResourcePath.GAME_COVER_ART, this.coverResolutionConfiguration
                             ) ||
                             !ImageResourceManager.uploadImageFile(
-                                    landscapeImage, updateData.getId(),
+                                    landscapeImage, updateData.getId().toString(),
                                     ResourcePath.GAME_LANDSCAPE_ART, this.landscapeResolutionConfiguration
                             )
                     )
@@ -288,7 +288,7 @@ public class GameService {
         }
     }
 
-    public boolean delete(UUID id) {
+    public boolean delete(long id) {
         try {
             Game game = gameRepository.findById(id);
             game.setDeletedAt(new Date());
@@ -300,7 +300,7 @@ public class GameService {
         }
     }
 
-    public boolean hardDelete(UUID id) {
+    public boolean hardDelete(long id) {
         try {
             this.gameRepository.delete(this.gameRepository.findById(id));
             return true;
@@ -326,7 +326,7 @@ public class GameService {
         try {
             filePath = Objects.requireNonNull(
                     ResourcePathProvider
-                            .getPathOfEntity(resourceType, game.getId().toString())
+                            .getPathOfEntity(resourceType, String.valueOf(game.getId()))
             ).resolve(filename);
         } catch(Exception e) {
             return ResponseEntity.notFound().build();

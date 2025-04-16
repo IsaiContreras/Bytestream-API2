@@ -14,7 +14,7 @@ public class MGame {
 
     // -- PRIVATE
     // Data
-    private UUID id;
+    private Long id;
     private String title;
     private String name;
     private String synopsis;
@@ -112,7 +112,7 @@ public class MGame {
         this.landscapeURIList = new ArrayList<>(landscapeURIList);
     }
 
-    public UUID getId() {
+    public Long getId() {
         return this.id;
     }
     public String getName() {

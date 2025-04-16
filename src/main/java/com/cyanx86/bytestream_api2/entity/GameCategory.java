@@ -17,8 +17,8 @@ public class GameCategory implements Serializable {
 
     // -- PRIVATE --
     // Columns
-    @Column(name="catego_id") @Id @GeneratedValue(strategy= GenerationType.UUID)
-    private UUID id;
+    @Column(name="catego_id") @Id @GeneratedValue(strategy= GenerationType.IDENTITY)
+    private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
     private String name;
@@ -61,7 +61,7 @@ public class GameCategory implements Serializable {
         this.deletedAt = deletedAt;
     }
 
-    public UUID getId() {
+    public Short getId() {
         return this.id;
     }
     public String getName() {
