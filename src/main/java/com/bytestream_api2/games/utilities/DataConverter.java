@@ -1,6 +1,7 @@
 package com.bytestream_api2.games.utilities;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,9 +25,22 @@ public class DataConverter {
     }
 
     public static byte[] imageToByteArray(BufferedImage image, String extension) throws IOException {
-        ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
-        ImageIO.write(image, extension, byteArrayOutput);
-        return byteArrayOutput.toByteArray();
+        if (extension.equalsIgnoreCase("jpeg"))
+            extension = "jpg";
+
+        if (extension.equalsIgnoreCase("jpg") && image.getColorModel().hasAlpha()) {
+            BufferedImage fixedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics2D = fixedImage.createGraphics();
+            graphics2D.drawImage(image, 0, 0, Color.WHITE, null);
+            image = fixedImage;
+        }
+
+        try (ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream()) {
+            boolean success = ImageIO.write(image, extension, byteArrayOutput);
+            if (!success)
+                throw new IOException("No ImageIO writer found for format: " + extension);
+            return byteArrayOutput.toByteArray();
+        }
     }
 
     public static BufferedImage byteArrayInputStreamToImage(ByteArrayInputStream byteArrayInputStream) {
@@ -35,9 +49,20 @@ public class DataConverter {
     }
 
     public static ByteArrayInputStream imageToByteArrayInputStream(BufferedImage image, String extension) {
-        try {
-            ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream();
-            ImageIO.write(image, extension, byteArrayOutput);
+        if (extension.equalsIgnoreCase("jpeg"))
+            extension = "jpg";
+
+        if (extension.equalsIgnoreCase("jpg") && image.getColorModel().hasAlpha()) {
+            BufferedImage fixedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics2D = fixedImage.createGraphics();
+            graphics2D.drawImage(image, 0, 0, Color.WHITE, null);
+            image = fixedImage;
+        }
+
+        try (ByteArrayOutputStream byteArrayOutput = new ByteArrayOutputStream()) {
+            boolean success = ImageIO.write(image, extension, byteArrayOutput);
+            if (!success)
+                throw new IOException("No ImageIO writer found for format: " + extension);
             return new ByteArrayInputStream(byteArrayOutput.toByteArray());
         } catch (Exception e) { return null; }
     }

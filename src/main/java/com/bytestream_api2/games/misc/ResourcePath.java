@@ -9,9 +9,7 @@ public enum ResourcePath {
     ROOT("upload.path"),
     GAME_RATING("game-rating-upload.path"),
     GAME_RATING_ENTITIES("game-rating-entity-upload.path"),
-    GAME_COVER_ART("game-cover-art-upload.path"),
-    GAME_LOGO_ART("game-logo-art-upload.path"),
-    GAME_LANDSCAPE_ART("game-landscape-art-upload.path");
+    GAME_ART("game-art-upload.path");
 
     // -- [[ ATTRIBUTES ]] --
 

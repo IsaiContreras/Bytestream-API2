@@ -2,7 +2,12 @@ package com.bytestream_api2.games.utilities;
 
 import com.bytestream_api2.games.misc.FilenameFormat;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.io.File;
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class FilenameFormatter {
 
@@ -34,6 +39,20 @@ public class FilenameFormatter {
             filename = filename.replace(parts[i], values[i]);
 
         return filename;
+    }
+
+    public static String getFileExension(String imageURL) {
+        String extension = null;
+        try(ImageInputStream imageInputStream = ImageIO.createImageInputStream(new File(imageURL))) {
+            Iterator<ImageReader> imageReaders = ImageIO.getImageReaders(imageInputStream);
+
+            if (imageReaders.hasNext()) {
+                ImageReader reader = imageReaders.next();
+                extension = reader.getFormatName();
+            }
+        } catch (Exception e) { return null; }
+
+        return extension;
     }
 
 }

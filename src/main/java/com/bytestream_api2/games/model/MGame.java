@@ -20,9 +20,8 @@ public class MGame {
     private String synopsis;
     private Date releaseDate;
 
-    private List<String> logoURIList = new ArrayList<>();
-    private List<String> coverURIList = new ArrayList<>();
-    private List<String> landscapeURIList = new ArrayList<>();
+    private String coverURI;
+    private String landsapeURI;
 
     private Date createdAt;
     private Date updatedAt;
@@ -102,14 +101,11 @@ public class MGame {
         this.releaseDate = releaseDate;
     }
 
-    public void setLogoURIList(List<String> logoURIList) {
-        this.logoURIList = new ArrayList<>(logoURIList);
+    public void setCoverURI(String coverURI) {
+        this.coverURI = coverURI;
     }
-    public void setCoverURIList(List<String> coverURIList) {
-        this.coverURIList = new ArrayList<>(coverURIList);
-    }
-    public void setLandscapeURIList(List<String> landscapeURIList) {
-        this.landscapeURIList = new ArrayList<>(landscapeURIList);
+    public void setLandsapeURI(String landsapeURI) {
+        this.landsapeURI = landsapeURI;
     }
 
     public Long getId() {
@@ -128,14 +124,11 @@ public class MGame {
         return this.releaseDate;
     }
 
-    public List<String> getLogoURIList() {
-        return this.logoURIList;
+    public String getCoverURI() {
+        return this.coverURI;
     }
-    public List<String> getCoverURIList() {
-        return this.coverURIList;
-    }
-    public List<String> getLandscapeURIList() {
-        return this.landscapeURIList;
+    public String getLandsapeURI() {
+        return this.landsapeURI;
     }
 
     public Date getCreatedAt() {

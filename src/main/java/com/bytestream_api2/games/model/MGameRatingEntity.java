@@ -3,9 +3,7 @@ package com.bytestream_api2.games.model;
 import com.bytestream_api2.games.entity.GameRatingEntity;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class MGameRatingEntity {
 
@@ -19,7 +17,7 @@ public class MGameRatingEntity {
     private String location;
     private String description;
 
-    private List<String> logoURIList = new ArrayList<>();
+    private String logoURI;
 
     private Date createdAt;
     private Date updatedAt;
@@ -51,7 +49,7 @@ public class MGameRatingEntity {
         this.location = gameRatingEntity.getLocation();
         this.description = gameRatingEntity.getDescription();
 
-        this.logoURIList = gameRatingEntity.getLogoURIList();
+        this.logoURI = gameRatingEntity.getLogoURI();
 
         this.createdAt = gameRatingEntity.getCreatedAt();
         this.updatedAt = gameRatingEntity.getUpdatedAt();
@@ -79,6 +77,10 @@ public class MGameRatingEntity {
         this.description = description;
     }
 
+    public void setLogoURI(String logoURI) {
+        this.logoURI = logoURI;
+    }
+
     public Short getId() {
         return this.id;
     }
@@ -95,8 +97,8 @@ public class MGameRatingEntity {
         return this.description;
     }
 
-    public List<String> getLogoURIList() {
-        return this.logoURIList;
+    public String getLogoURI() {
+        return this.logoURI;
     }
 
     public Date getCreatedAt() {

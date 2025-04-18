@@ -2,11 +2,13 @@ package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameRatingEntityConverter;
 import com.bytestream_api2.games.mapper.GameRatingEntityMapper;
-import com.bytestream_api2.games.misc.ImageResolution;
+import com.bytestream_api2.games.misc.FilenameFormat;
 import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.misc.StaticResourcesPaths;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
-import com.bytestream_api2.games.utilities.ImageResourceManager;
+import com.bytestream_api2.games.utilities.DataConverter;
+import com.bytestream_api2.games.utilities.FilenameFormatter;
+import com.bytestream_api2.games.utilities.ImageResourceUploader;
 import com.bytestream_api2.games.utilities.ResourcePathProvider;
 import com.bytestream_api2.games.entity.GameRatingEntity;
 import com.bytestream_api2.games.model.MGameRatingEntity;
@@ -29,6 +31,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
@@ -61,13 +65,34 @@ public class GameRatingEntityService {
     // Class Components
     private static final Log logger = LogFactory.getLog(GameRatingEntityService.class);
 
-    private final int logoResolutionConfiguration = ImageResolution.ALL_RESOLUTIONS_VALUE;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
 
     // -- PRIVATE --
+    private boolean uploadLogoImage(MultipartFile imageMultiPartFile, GameRatingEntity ratingEntityData) {
+        String filename;
+        try {
+            filename = FilenameFormatter.formatFilename(
+                    FilenameFormat.ENTITY_FILE_FORMAT,
+                    new String[]{
+                            ratingEntityData.getId().toString().concat(ratingEntityData.getName()),
+                            Objects.requireNonNull(imageMultiPartFile.getContentType()).split("/")[1]
+                    }
+            );
+        } catch (Exception e) { return false; }
+        if (filename == null)
+            return false;
+
+        return ImageResourceUploader.uploadImageFile(
+                imageMultiPartFile,
+                ResourcePathProvider.getPathOfEntity(
+                        ResourcePath.GAME_RATING_ENTITIES, ratingEntityData.getId().toString()
+                ),
+                filename
+        );
+    }
+
     private void getLogoURIs(List<MGameRatingEntity> ratingEntityList) {
         for (MGameRatingEntity ratingEntityItem : ratingEntityList) {
             File[] files;
@@ -82,17 +107,16 @@ public class GameRatingEntityService {
             if (files == null)
                 return;
 
-            for (File fileItem : files) {
-                ratingEntityItem.getLogoURIList().add(
+            if (files.length > 0)
+                ratingEntityItem.setLogoURI(
                         StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.constructFullURI(
                                 environment,
                                 new String[] {
                                         ratingEntityItem.getName(),
-                                        fileItem.getName()
+                                        files[0].getName()
                                 }
                         )
                 );
-            }
         }
     }
 
@@ -108,10 +132,7 @@ public class GameRatingEntityService {
         try {
             newItem = ratingEntityRepository.save(gameRatingEntity);
 
-            if (!ImageResourceManager.uploadImageFile(
-                    logoImage, newItem.getId().toString(),
-                    ResourcePath.GAME_RATING_ENTITIES, this.logoResolutionConfiguration
-            )) {
+            if (!this.uploadLogoImage(logoImage, newItem)) {
                 ratingEntityRepository.delete(newItem);
                 return false;
             }
@@ -131,12 +152,7 @@ public class GameRatingEntityService {
                     !logoImage.isEmpty() &&
                     (
                             ratingEntityToUpdate == null ||
-                            !ImageResourceManager.uploadImageFile(
-                                    logoImage,
-                                    ratingEntityToUpdate.getId().toString(),
-                                    ResourcePath.GAME_RATING_ENTITIES,
-                                    this.logoResolutionConfiguration
-                            )
+                            !this.uploadLogoImage(logoImage, ratingEntityToUpdate)
                     )
             )
                 return false;
@@ -172,7 +188,7 @@ public class GameRatingEntityService {
     }
 
     // Queries
-    public ResponseEntity<Resource> getLogoImage(String name, String filename) {
+    public ResponseEntity<byte[]> getLogoImage(String name, String filename, Integer width, Integer height) {
         GameRatingEntity ratingEntity = ratingEntityRepository.findByName(name);
         if (ratingEntity == null)
             return ResponseEntity.notFound().build();
@@ -193,6 +209,15 @@ public class GameRatingEntityService {
             if (!resource.exists() || !resource.isReadable())
                 return ResponseEntity.notFound().build();
 
+            BufferedImage image = ImageIO.read(filePath.toFile());
+            String extension = FilenameFormatter.getFileExension(filePath.toString());
+
+            image = ImageResourceUploader.resizeImage(
+                    image,
+                    width != null ? width : image.getWidth(),
+                    height != null ? height : image.getHeight()
+            );
+
             String contentType = context.getMimeType(filePath.toString());
             if (contentType == null)
                 contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
@@ -203,7 +228,7 @@ public class GameRatingEntityService {
                             HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" +
                                     resource.getFilename() + "\""
-                    ).body(resource);
+                    ).body(DataConverter.imageToByteArray(image, extension));
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }

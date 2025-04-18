@@ -77,12 +77,10 @@ public class GameRatingDescriptorService {
             if (descriptorToUpdate == null)
                 return false;
 
-            ratingDescriptor.setGameRatingEntity(
-                    ratingEntityRepository.findByName(
-                            ratingDescriptor.getGameRatingEntity() != null ?
-                                    ratingDescriptor.getGameRatingEntity().getName() : null
-                    )
-            );
+            if (ratingDescriptor.getGameRatingEntity() != null)
+                ratingDescriptor.setGameRatingEntity(
+                        ratingEntityRepository.findByName(ratingDescriptor.getGameRatingEntity().getName())
+                );
 
             ratingDescriptorMapper.partialUpdateRatingDescriptor(descriptorToUpdate, ratingDescriptor);
 

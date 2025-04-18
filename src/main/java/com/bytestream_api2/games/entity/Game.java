@@ -116,13 +116,19 @@ public class Game implements Serializable {
     }
 
     public void setGameCategories(List<GameCategory> gameCategories) {
-        this.gameCategories = new ArrayList<>(gameCategories);
+        if (gameCategories == null)
+            this.gameCategories = null;
+        else this.gameCategories = new ArrayList<>(gameCategories);
     }
     public void setGameRatings(List<GameRating> gameRatings) {
-        this.gameRatings = new ArrayList<>(gameRatings);
+        if (gameRatings == null)
+            this.gameRatings = null;
+        else this.gameRatings = new ArrayList<>(gameRatings);
     }
     public void setGameRatingDescriptors(List<GameRatingDescriptor> gameRatingDescriptors) {
-        this.gameRatingDescriptors = new ArrayList<>(gameRatingDescriptors);
+        if (gameRatingDescriptors == null)
+            this.gameRatingDescriptors = null;
+        else this.gameRatingDescriptors = new ArrayList<>(gameRatingDescriptors);
     }
 
     public Long getId() {

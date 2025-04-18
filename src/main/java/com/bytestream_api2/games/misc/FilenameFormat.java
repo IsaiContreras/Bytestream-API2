@@ -7,7 +7,7 @@ public enum FilenameFormat {
 
     // -- [[ VALUES ]] --
     ENTITY_FILE_FORMAT("common-entity-media.filename.format"),
-    RESOLUTION_NAME_FORMAT("resolution-name.filename.format");
+    GAME_ART_FORMAT("game-art-media.filename.format");
 
     // -- [[ ATTRIBUTES ]] --
 

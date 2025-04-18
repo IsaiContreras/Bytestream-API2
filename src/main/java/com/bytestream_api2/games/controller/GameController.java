@@ -41,7 +41,6 @@ public class GameController {
     @PostMapping("/create")
     public boolean addNewGame(
             @RequestPart("data") @Validated String game,
-            @RequestPart("logo") MultipartFile logoImage,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
@@ -50,13 +49,12 @@ public class GameController {
             gameObject = new ObjectMapper()
                     .readValue(game, Game.class);
         } catch (Exception e) { return false; }
-        return this.gameService.create(gameObject, logoImage, coverImage, landscapeImage);
+        return this.gameService.create(gameObject, coverImage, landscapeImage);
     }
 
     @PatchMapping("/update")
     public boolean updateGame(
             @RequestPart("data") @Validated String game,
-            @RequestPart("logo") MultipartFile logoImage,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
@@ -65,7 +63,7 @@ public class GameController {
             gameObject = new ObjectMapper()
                     .readValue(game, Game.class);
         } catch (Exception e) { return false; }
-        return this.gameService.update(gameObject, logoImage, coverImage, landscapeImage);
+        return this.gameService.update(gameObject, coverImage, landscapeImage);
     }
 
     @DeleteMapping("/delete")

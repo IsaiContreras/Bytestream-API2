@@ -3,9 +3,7 @@ package com.bytestream_api2.games.model;
 import com.bytestream_api2.games.entity.GameRating;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class MGameRating {
 
@@ -17,7 +15,7 @@ public class MGameRating {
     private String name;
     private String description;
 
-    private final List<String> logoURIList = new ArrayList<>();
+    private String logoURI;
 
     private Date createdAt;
     private Date updatedAt;
@@ -67,6 +65,10 @@ public class MGameRating {
         this.description = description;
     }
 
+    public void setLogoURI(String logoURI) {
+        this.logoURI = logoURI;
+    }
+
     public Short getId() {
         return this.id;
     }
@@ -77,8 +79,8 @@ public class MGameRating {
         return this.description;
     }
 
-    public List<String> getLogoURIList() {
-        return this.logoURIList;
+    public String getLogoURI() {
+        return this.logoURI;
     }
 
     public Date getCreatedAt() {

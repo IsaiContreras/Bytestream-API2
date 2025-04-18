@@ -1,17 +1,12 @@
 package com.bytestream_api2.games.controller;
 
-import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.service.GameRatingEntityService;
 import com.bytestream_api2.games.service.GameRatingService;
 import com.bytestream_api2.games.service.GameService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/public/media")
@@ -40,43 +35,33 @@ public class EntityStaticResourceController {
 
     // -- PUBLIC --
     @GetMapping("/rating_entity/{name}/{filename}")
-    public ResponseEntity<Resource> ratingEntityImages(
+    public ResponseEntity<byte[]> ratingEntityImages(
         @PathVariable("name") String name,
-        @PathVariable("filename") String filename
+        @PathVariable("filename") String filename,
+        @RequestParam(name="width", required=false) Integer width,
+        @RequestParam(name="height", required=false) Integer height
     ) {
-        return ratingEntityService.getLogoImage(name, filename);
+        return ratingEntityService.getLogoImage(name, filename, width, height);
     }
 
     @GetMapping("/rating/{name}/{filename}")
-    public ResponseEntity<Resource> ratingImages(
+    public ResponseEntity<byte[]> ratingImages(
             @PathVariable("name") String name,
-            @PathVariable("filename") String filename
+            @PathVariable("filename") String filename,
+            @RequestParam(name="width", required=false) Integer width,
+            @RequestParam(name="height", required=false) Integer height
     ) {
-        return ratingService.getLogoImage(name, filename);
+        return ratingService.getLogoImage(name, filename, width, height);
     }
 
-    @GetMapping("/game_logo/{name}/{filename}")
-    public ResponseEntity<Resource> gameLogoImage(
+    @GetMapping("/game_art/{name}/{filename}")
+    public ResponseEntity<byte[]> gameLogoImage(
             @PathVariable("name") String name,
-            @PathVariable("filename") String filename
+            @PathVariable("filename") String filename,
+            @RequestParam(name="width", required=false) Integer width,
+            @RequestParam(name="height", required=false) Integer height
     ) {
-        return gameService.getImage(ResourcePath.GAME_LOGO_ART, name, filename);
-    }
-
-    @GetMapping("/game_cover/{name}/{filename}")
-    public ResponseEntity<Resource> gameCoverImage(
-            @PathVariable("name") String name,
-            @PathVariable("filename") String filename
-    ) {
-        return gameService.getImage(ResourcePath.GAME_COVER_ART, name, filename);
-    }
-
-    @GetMapping("/game_landscape/{name}/{filename}")
-    public ResponseEntity<Resource> gameLandscapeImage(
-            @PathVariable("name") String name,
-            @PathVariable("filename") String filename
-    ) {
-        return gameService.getImage(ResourcePath.GAME_LANDSCAPE_ART, name, filename);
+        return gameService.getImage(name, filename, width, height);
     }
 
 }

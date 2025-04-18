@@ -2,13 +2,16 @@ package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameConverter;
 import com.bytestream_api2.games.entity.*;
+import com.bytestream_api2.games.misc.FilenameFormat;
+import com.bytestream_api2.games.misc.GameArtType;
 import com.bytestream_api2.games.repository.GameCategoryRepository;
 import com.bytestream_api2.games.repository.GameRatingDescriptorRepository;
 import com.bytestream_api2.games.repository.GameRatingRepository;
 import com.bytestream_api2.games.repository.GameRepository;
-import com.bytestream_api2.games.utilities.ImageResourceManager;
+import com.bytestream_api2.games.utilities.DataConverter;
+import com.bytestream_api2.games.utilities.FilenameFormatter;
+import com.bytestream_api2.games.utilities.ImageResourceUploader;
 import com.bytestream_api2.games.utilities.ResourcePathProvider;
-import com.bytestream_api2.games.misc.ImageResolution;
 import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.misc.StaticResourcesPaths;
 
@@ -35,6 +38,8 @@ import com.bytestream_api2.games.model.MGame;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.*;
@@ -82,65 +87,90 @@ public class GameService {
     // Class Components
     private static final Log logger = LogFactory.getLog(GameService.class);
 
-    private final int logoResolutionConfiguration =
-            ImageResolution.ORIGINAL_WIDTH_VALUE | ImageResolution.WIDTH_64_VALUE | ImageResolution.WIDTH_256_VALUE;
-    private final int coverResolutionConfiguration =
-            ImageResolution.ORIGINAL_WIDTH_VALUE | ImageResolution.WIDTH_64_VALUE | ImageResolution.WIDTH_256_VALUE;
-    private final int landscapeResolutionConfiguration =
-            ImageResolution.ORIGINAL_WIDTH_VALUE;
-
     // -- PUBLIC --
 
     // -- [[ METHODS ]] --
 
     // -- PRIVATE --
-    private void getMediaURIs(List<MGame> gameList, ResourcePath mediaType) {
+    private boolean uploadImage(MultipartFile imageMultiPartFile, Game gameData, GameArtType type) {
+        String filename;
+        try {
+            filename = FilenameFormatter.formatFilename(
+                    FilenameFormat.GAME_ART_FORMAT,
+                    new String[]{
+                            gameData.getId().toString().concat(gameData.getName()),
+                            type.getName(),
+                            Objects.requireNonNull(imageMultiPartFile.getContentType()).split("/")[1]
+                    }
+            );
+        } catch (Exception e) { return false; }
+        if (filename == null)
+            return false;
+
+        return ImageResourceUploader.uploadImageFile(
+                imageMultiPartFile,
+                ResourcePathProvider.getPathOfEntity(ResourcePath.GAME_ART, gameData.getId().toString()),
+                filename
+        );
+    }
+
+    private void getMediaURIs(List<MGame> gameList) {
         for (MGame gameItem : gameList) {
             File[] files;
             try {
                 files = new File(
                         Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
-                                mediaType, String.valueOf(gameItem.getId())
+                                ResourcePath.GAME_ART, String.valueOf(gameItem.getId())
                         )).toString()
                 ).listFiles();
             } catch (Exception e) { return; }
             if (files == null)
                 return;
 
-            List<String> mediaURIList = new ArrayList<>();
             for (File fileItem : files) {
+                GameArtType artType = Arrays.stream(GameArtType.values()).filter(
+                        type -> fileItem.getName().contains(type.getName())
+                ).findFirst().orElse(null);
+                if (artType == null)
+                    continue;
+
+                String fileURI;
                 try {
-                    mediaURIList.add(
-                            Objects.requireNonNull(StaticResourcesPaths.getByResourcePath(mediaType)).constructFullURI(
-                                    environment,
-                                    new String[]{
-                                            gameItem.getName(),
-                                            fileItem.getName()
-                                    }
-                            )
+                    fileURI = Objects.requireNonNull(
+                            StaticResourcesPaths.getByResourcePath(ResourcePath.GAME_ART)
+                    ).constructFullURI(
+                            environment,
+                            new String[] {
+                                    gameItem.getName(),
+                                    fileItem.getName()
+                            }
                     );
                 } catch (Exception e) { return; }
-            }
 
-            switch (mediaType) {
-                case GAME_LOGO_ART -> gameItem.setLogoURIList(mediaURIList);
-                case GAME_COVER_ART -> gameItem.setCoverURIList(mediaURIList);
-                case GAME_LANDSCAPE_ART -> gameItem.setLandscapeURIList(mediaURIList);
-                default -> { return; }
+                switch(artType) {
+                    case COVER_ART -> gameItem.setCoverURI(fileURI);
+                    case LANDSCAPE_ART -> gameItem.setLandsapeURI(fileURI);
+                }
             }
         }
     }
 
     private void resolveRelatedEntities(Game game) {
-        List<GameCategory> retrievedCategos = game.getGameCategories().stream()
-                .map(item -> gameCategoryRepository.findByName(item.getName()))
-                .toList();
-        List<GameRating> retrievedRatings = game.getGameRatings().stream()
-                .map(item -> gameRatingRepository.findByName(item.getName()))
-                .toList();
-        List<GameRatingDescriptor> retrievedRatingDescriptors = game.getGameRatingDescriptors().stream()
-                .map(item -> gameRatingDescriptorRepository.findByName(item.getName()))
-                .toList();
+        List<GameCategory> retrievedCategos = game.getGameCategories() != null ?
+                game.getGameCategories().stream()
+                        .map(item -> gameCategoryRepository.findByName(item.getName()))
+                        .toList()
+                : null;
+        List<GameRating> retrievedRatings = game.getGameRatings() != null ?
+                game.getGameRatings().stream()
+                        .map(item -> gameRatingRepository.findByName(item.getName()))
+                        .toList()
+                : null;
+        List<GameRatingDescriptor> retrievedRatingDescriptors = game.getGameRatingDescriptors() != null ?
+                game.getGameRatingDescriptors().stream()
+                        .map(item -> gameRatingDescriptorRepository.findByName(item.getName()))
+                        .toList()
+                : null;
 
         game.setGameCategories(retrievedCategos);
         game.setGameRatings(retrievedRatings);
@@ -157,7 +187,6 @@ public class GameService {
     @Transactional
     public boolean create(
             Game game,
-            MultipartFile logoImage,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
@@ -191,18 +220,8 @@ public class GameService {
 
             // Try to upload images.
             if(
-                !ImageResourceManager.uploadImageFile(
-                        logoImage, newItem.getId().toString(),
-                        ResourcePath.GAME_LOGO_ART, this.logoResolutionConfiguration
-                ) ||
-                !ImageResourceManager.uploadImageFile(
-                        coverImage, newItem.getId().toString(),
-                        ResourcePath.GAME_COVER_ART, this.coverResolutionConfiguration
-                ) ||
-                !ImageResourceManager.uploadImageFile(
-                        landscapeImage, newItem.getId().toString(),
-                        ResourcePath.GAME_LANDSCAPE_ART, this.landscapeResolutionConfiguration
-                )
+                !this.uploadImage(coverImage, newItem, GameArtType.COVER_ART) ||
+                !this.uploadImage(landscapeImage, newItem, GameArtType.LANDSCAPE_ART)
             ) {
                 gameRepository.delete(newItem);
                 return false;
@@ -219,27 +238,26 @@ public class GameService {
     @Transactional
     public boolean update(
             Game game,
-            MultipartFile logoImage,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
-        Game previousStageGame = null;
+        Game gameCurrentState = null;
         try {
-            previousStageGame = gameRepository.findById(game.getId());
-            if (previousStageGame == null)
+            gameCurrentState = gameRepository.findById(game.getId());
+            if (gameCurrentState == null)
                 return false;
 
-            Game updateData = new Game(previousStageGame);
-            gameMapper.partialUpdateGame(updateData, game);
+            this.resolveRelatedEntities(game);
 
-            this.resolveRelatedEntities(updateData);
+            Game updateData = new Game(gameCurrentState);
+            gameMapper.partialUpdateGame(updateData, game);
 
             updateData = gameRepository.saveAndFlush(updateData);
             entityManager.refresh(updateData);
 
             // Check if it has at least one GameCategory and one GameRating.
             if (updateData.getGameCategories().isEmpty()) {
-                gameRepository.saveAndFlush(previousStageGame);
+                gameRepository.saveAndFlush(gameCurrentState);
                 return false;
             }
 
@@ -253,37 +271,27 @@ public class GameService {
                                 .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
                                 .count() > 1
                 ) {
-                    gameRepository.saveAndFlush(previousStageGame);
+                    gameRepository.saveAndFlush(gameCurrentState);
                     return false;
                 }
             }
 
             // Try to upload images
             if (
-                    !(logoImage.isEmpty() || coverImage.isEmpty() || landscapeImage.isEmpty()) &&
+                    !(coverImage.isEmpty() || landscapeImage.isEmpty()) &&
                     (
-                            !ImageResourceManager.uploadImageFile(
-                                    logoImage, updateData.getId().toString(),
-                                    ResourcePath.GAME_LOGO_ART, this.logoResolutionConfiguration
-                            ) ||
-                            !ImageResourceManager.uploadImageFile(
-                                    coverImage, updateData.getId().toString(),
-                                    ResourcePath.GAME_COVER_ART, this.coverResolutionConfiguration
-                            ) ||
-                            !ImageResourceManager.uploadImageFile(
-                                    landscapeImage, updateData.getId().toString(),
-                                    ResourcePath.GAME_LANDSCAPE_ART, this.landscapeResolutionConfiguration
-                            )
+                            !this.uploadImage(coverImage, updateData, GameArtType.COVER_ART) ||
+                            !this.uploadImage(landscapeImage, updateData, GameArtType.LANDSCAPE_ART)
                     )
             ) {
-                gameRepository.saveAndFlush(previousStageGame);
+                gameRepository.saveAndFlush(gameCurrentState);
                 return false;
             }
 
             return true;
         } catch (Exception e) {
-            if (previousStageGame != null)
-                gameRepository.saveAndFlush(previousStageGame);
+            if (gameCurrentState != null)
+                gameRepository.saveAndFlush(gameCurrentState);
             return false;
         }
     }
@@ -310,23 +318,17 @@ public class GameService {
     }
 
     // Queries
-    public ResponseEntity<Resource> getImage(ResourcePath resourceType, String name, String filename) {
-        if (!(
-                resourceType.equals(ResourcePath.GAME_LOGO_ART) ||
-                resourceType.equals(ResourcePath.GAME_COVER_ART) ||
-                resourceType.equals(ResourcePath.GAME_LANDSCAPE_ART)
-        ))
-            return ResponseEntity.notFound().build();
-
+    public ResponseEntity<byte[]> getImage(String name, String filename, Integer width, Integer height) {
         Game game = gameRepository.findByName(name);
         if (game == null)
             return ResponseEntity.notFound().build();
 
+        // Obtiene la ruta de la imagen
         Path filePath;
         try {
             filePath = Objects.requireNonNull(
                     ResourcePathProvider
-                            .getPathOfEntity(resourceType, String.valueOf(game.getId()))
+                            .getPathOfEntity(ResourcePath.GAME_ART, game.getId().toString())
             ).resolve(filename);
         } catch(Exception e) {
             return ResponseEntity.notFound().build();
@@ -338,17 +340,30 @@ public class GameService {
             if (!resource.exists() || !resource.isReadable())
                 return ResponseEntity.notFound().build();
 
+            BufferedImage image = ImageIO.read(filePath.toFile());
+            String extension = FilenameFormatter.getFileExension(filePath.toString());
+            if (extension == null)
+                return ResponseEntity.notFound().build();
+
+            image = ImageResourceUploader.resizeImage(
+                    image,
+                    width != null ? width : image.getWidth(),
+                    height != null ? height : image.getHeight()
+            );
+
             String contentType = context.getMimeType(filePath.toString());
             if (contentType == null)
                 contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
 
+            MediaType type = MediaType.parseMediaType(contentType);
+
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
+                    .contentType(type)
                     .header(
                             HttpHeaders.CONTENT_DISPOSITION,
                             "inline; filename=\"" +
                                     resource.getFilename() + "\""
-                    ).body(resource);
+                    ).body(DataConverter.imageToByteArray(image, extension));
         } catch(Exception e) {
             return ResponseEntity.status(500).build();
         }
@@ -367,9 +382,7 @@ public class GameService {
                 gameRepository.findByTitleContains(title, pageable).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
 
-        this.getMediaURIs(results, ResourcePath.GAME_LOGO_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_COVER_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_LANDSCAPE_ART);
+        this.getMediaURIs(results);
 
         return results;
     }
@@ -379,9 +392,7 @@ public class GameService {
                 gameRepository.findByGameCategoriesContains(categories, pageable).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
 
-        this.getMediaURIs(results, ResourcePath.GAME_LOGO_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_COVER_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_LANDSCAPE_ART);
+        this.getMediaURIs(results);
 
         return results;
     }
@@ -391,9 +402,7 @@ public class GameService {
                 gameRepository.findByGameRatingsContains(ratings, pageable).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
 
-        this.getMediaURIs(results, ResourcePath.GAME_LOGO_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_COVER_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_LANDSCAPE_ART);
+        this.getMediaURIs(results);
 
         return results;
     }
@@ -403,9 +412,7 @@ public class GameService {
                 gameRepository.findByGameRatingDescriptorsContains(ratingDescriptors, pageable).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
 
-        this.getMediaURIs(results, ResourcePath.GAME_LOGO_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_COVER_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_LANDSCAPE_ART);
+        this.getMediaURIs(results);
 
         return results;
     }
@@ -415,9 +422,7 @@ public class GameService {
         List<MGame> results = gameConverter.parseToList(gameRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
 
-        this.getMediaURIs(results, ResourcePath.GAME_LOGO_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_COVER_ART);
-        this.getMediaURIs(results, ResourcePath.GAME_LANDSCAPE_ART);
+        this.getMediaURIs(results);
 
         return results;
     }
