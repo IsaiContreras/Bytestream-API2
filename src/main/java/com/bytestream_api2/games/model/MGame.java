@@ -4,8 +4,13 @@ import com.bytestream_api2.games.entity.Game;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
+import com.bytestream_api2.games.misc.GameArtType;
+import com.bytestream_api2.games.misc.ResourcePath;
+import com.bytestream_api2.games.misc.StaticResourcesPaths;
+import com.bytestream_api2.games.utilities.ResourcePathProvider;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.*;
 
 public class MGame {

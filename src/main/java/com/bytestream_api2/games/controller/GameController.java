@@ -6,6 +6,8 @@ import com.bytestream_api2.games.entity.GameRatingDescriptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 
 import org.springframework.data.domain.Pageable;
@@ -39,7 +41,7 @@ public class GameController {
     // -- PUBLIC --
     // CUD
     @PostMapping("/create")
-    public boolean addNewGame(
+    public ResponseEntity<?> addNewGame(
             @RequestPart("data") @Validated String game,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
@@ -48,12 +50,12 @@ public class GameController {
         try {
             gameObject = new ObjectMapper()
                     .readValue(game, Game.class);
-        } catch (Exception e) { return false; }
+        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
         return this.gameService.create(gameObject, coverImage, landscapeImage);
     }
 
     @PatchMapping("/update")
-    public boolean updateGame(
+    public ResponseEntity<?> updateGame(
             @RequestPart("data") @Validated String game,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
@@ -62,19 +64,19 @@ public class GameController {
         try {
             gameObject = new ObjectMapper()
                     .readValue(game, Game.class);
-        } catch (Exception e) { return false; }
+        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
         return this.gameService.update(gameObject, coverImage, landscapeImage);
     }
 
     @DeleteMapping("/delete")
-    public boolean deleteGame(
+    public ResponseEntity<?> deleteGame(
             @RequestParam("id") long id
     ) {
         return this.gameService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public boolean hardDeleteGame(
+    public ResponseEntity<?> hardDeleteGame(
             @RequestParam("id") long id
     ) {
         return this.gameService.hardDelete(id);
@@ -82,14 +84,14 @@ public class GameController {
 
     // Queries
     @GetMapping("/get/byname")
-    public MGame getGameByName(
+    public ResponseEntity<MGame> getGameByName(
             @RequestParam("name") String name
     ) {
         return this.gameService.getByName(name);
     }
 
     @GetMapping("/get/bytitle")
-    public List<MGame> getGameByTitle(
+    public ResponseEntity<?> getGameByTitle(
             @RequestParam("title") String title,
             Pageable pageable
     ) {
@@ -97,7 +99,7 @@ public class GameController {
     }
 
     @GetMapping("/get/bycategories")
-    public List<MGame> getGamesByCategories(
+    public ResponseEntity<?> getGamesByCategories(
             @RequestParam("categories") List<GameCategory> categories,
             Pageable pageable
     ) {
@@ -105,7 +107,7 @@ public class GameController {
     }
 
     @GetMapping("/get/byratings")
-    public List<MGame> getGamesByRatings(
+    public ResponseEntity<?> getGamesByRatings(
             @RequestParam("ratings") List<GameRating> ratings,
             Pageable pageable
     ) {
@@ -113,7 +115,7 @@ public class GameController {
     }
 
     @GetMapping("/get/bydescriptors")
-    public List<MGame> getGamesByDescriptors(
+    public ResponseEntity<?> getGamesByDescriptors(
             @RequestParam("descriptors") List<GameRatingDescriptor> ratingDescriptors,
             Pageable pageable
     ) {
@@ -121,7 +123,7 @@ public class GameController {
     }
 
     @GetMapping("/get")
-    public List<MGame> getAllGames(
+    public ResponseEntity<?> getAllGames(
             Pageable pageable
     ) {
         return this.gameService.getAll(pageable);

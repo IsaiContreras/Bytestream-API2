@@ -6,6 +6,7 @@ import com.bytestream_api2.games.service.GameCategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,28 +33,28 @@ public class GameCategoryController {
     // -- PUBLIC --
     // CUD
     @PostMapping("/create")
-    public boolean addNewGameCategory(
+    public ResponseEntity<?> addNewGameCategory(
             @RequestBody @Validated GameCategory gameCategory
     ) {
         return this.gameCategoryService.create(gameCategory);
     }
 
     @PatchMapping("/update")
-    public boolean updateGameCategory(
+    public ResponseEntity<?> updateGameCategory(
             @RequestBody @Validated GameCategory gameCategory
     ) {
         return this.gameCategoryService.update(gameCategory);
     }
 
     @DeleteMapping("/delete")
-    public boolean deleteGameCategory(
+    public ResponseEntity<?> deleteGameCategory(
             @RequestParam("id") short id
     ) {
         return this.gameCategoryService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public boolean hardDeleteGameCategory(
+    public ResponseEntity<?> hardDeleteGameCategory(
             @RequestParam("id") short id
     ) {
         return gameCategoryService.hardDelete(id);
@@ -61,21 +62,21 @@ public class GameCategoryController {
 
     // Queries
     @GetMapping("/get/byname")
-    public MGameCategory getByName(
+    public ResponseEntity<MGameCategory> getByName(
             @RequestParam("name") String name
     ) {
         return this.gameCategoryService.getByName(name);
     }
 
     @GetMapping("/get/bynamematch")
-    public List<MGameCategory> getByNameContains(
+    public ResponseEntity<?> getByNameContains(
             @RequestParam("name") String name, Pageable pageable
     ) {
         return this.gameCategoryService.getByNameContains(name, pageable);
     }
 
     @GetMapping("/get")
-    public List<MGameCategory> getAllCategories(
+    public ResponseEntity<?> getAllCategories(
             Pageable pageable
     ) {
         return this.gameCategoryService.getAll(pageable);

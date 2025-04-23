@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +36,7 @@ public class GameRatingController {
     // -- PUBLIC --
     // CUD
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    public boolean addNewRating(
+    public ResponseEntity<?> addNewRating(
             @RequestPart("data") @Validated String gameRating,
             @RequestPart("logo") MultipartFile logoImage
     ) {
@@ -42,12 +44,12 @@ public class GameRatingController {
         try {
             gameRatingObject = new ObjectMapper()
                     .readValue(gameRating, GameRating.class);
-        } catch (Exception e) { return false; }
+        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
         return ratingService.create(gameRatingObject, logoImage);
     }
 
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    public boolean updateRating(
+    public ResponseEntity<?> updateRating(
             @RequestPart("data") @Validated String gameRating,
             @RequestPart("logo") MultipartFile logoImage
     ) {
@@ -55,19 +57,19 @@ public class GameRatingController {
         try {
             gameRatingObject = new ObjectMapper()
                     .readValue(gameRating, GameRating.class);
-        } catch (Exception e) { return false; }
+        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
         return ratingService.update(gameRatingObject, logoImage);
     }
 
     @DeleteMapping("/delete")
-    public boolean deleteRating(
+    public ResponseEntity<?> deleteRating(
             @RequestParam("id") short id
     ) {
         return ratingService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public boolean hardDeleteRating(
+    public ResponseEntity<?> hardDeleteRating(
             @RequestParam("id") short id
     ) {
         return ratingService.hardDelete(id);
@@ -75,14 +77,14 @@ public class GameRatingController {
 
     // Queries
     @GetMapping("/get/byname")
-    public MGameRating getByName(
+    public ResponseEntity<MGameRating> getByName(
             @RequestParam("name") String name
     ) {
         return ratingService.getByName(name);
     }
 
     @GetMapping("/get/byentity")
-    public List<MGameRating> getByRatingEntity(
+    public ResponseEntity<?> getByRatingEntity(
             @RequestParam("name") String name,
             Pageable pageable
     ) {
@@ -90,7 +92,7 @@ public class GameRatingController {
     }
 
     @GetMapping("/get")
-    public List<MGameRating> getAll(
+    public ResponseEntity<?> getAll(
             Pageable pageable
     ) {
         return ratingService.getAll(pageable);
