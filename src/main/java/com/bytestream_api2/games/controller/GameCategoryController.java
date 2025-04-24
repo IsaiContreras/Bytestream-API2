@@ -1,16 +1,15 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameCategory;
-import com.bytestream_api2.games.model.MGameCategory;
 import com.bytestream_api2.games.service.GameCategoryService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/categories")
@@ -33,28 +32,28 @@ public class GameCategoryController {
     // -- PUBLIC --
     // CUD
     @PostMapping("/create")
-    public ResponseEntity<?> addNewGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
+    public ResponseEntity<Map<String, ?>> addNewGameCategory(
+            @Valid @RequestBody GameCategory gameCategory
     ) {
         return this.gameCategoryService.create(gameCategory);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> updateGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
+    public ResponseEntity<Map<String, ?>> updateGameCategory(
+            @Valid @RequestBody GameCategory gameCategory
     ) {
         return this.gameCategoryService.update(gameCategory);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteGameCategory(
+    public ResponseEntity<Map<String, ?>> deleteGameCategory(
             @RequestParam("id") short id
     ) {
         return this.gameCategoryService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public ResponseEntity<?> hardDeleteGameCategory(
+    public ResponseEntity<Map<String, ?>> hardDeleteGameCategory(
             @RequestParam("id") short id
     ) {
         return gameCategoryService.hardDelete(id);
@@ -62,21 +61,21 @@ public class GameCategoryController {
 
     // Queries
     @GetMapping("/get/byname")
-    public ResponseEntity<MGameCategory> getByName(
+    public ResponseEntity<Map<String, ?>> getByName(
             @RequestParam("name") String name
     ) {
         return this.gameCategoryService.getByName(name);
     }
 
     @GetMapping("/get/bynamematch")
-    public ResponseEntity<?> getByNameContains(
+    public ResponseEntity<Map<String, ?>> getByNameContains(
             @RequestParam("name") String name, Pageable pageable
     ) {
         return this.gameCategoryService.getByNameContains(name, pageable);
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAllCategories(
+    public ResponseEntity<Map<String, ?>> getAllCategories(
             Pageable pageable
     ) {
         return this.gameCategoryService.getAll(pageable);

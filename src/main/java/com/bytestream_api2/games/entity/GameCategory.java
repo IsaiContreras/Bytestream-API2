@@ -1,6 +1,9 @@
 package com.bytestream_api2.games.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +24,12 @@ public class GameCategory implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
+    @NotBlank(message="Field 'name' is mandatory.")
+    @Size(max=31, message="Field 'name' must be less than 31 characters long.")
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^[a-z0-9\\p{Punct}&&[^_]]+(-[a-z0-9\\p{Punct}&&[^_]]+)*$"
+    )
     private String name;
 
     @Column(name="created_at", nullable=false, updatable=false)

@@ -1,20 +1,17 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameRating;
-import com.bytestream_api2.games.model.MGameRating;
 import com.bytestream_api2.games.service.GameRatingService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/ratings")
@@ -36,40 +33,30 @@ public class GameRatingController {
     // -- PUBLIC --
     // CUD
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addNewRating(
-            @RequestPart("data") @Validated String gameRating,
+    public ResponseEntity<Map<String, ?>> addNewRating(
+            @Valid @RequestPart("data") GameRating gameRating,
             @RequestPart("logo") MultipartFile logoImage
     ) {
-        GameRating gameRatingObject;
-        try {
-            gameRatingObject = new ObjectMapper()
-                    .readValue(gameRating, GameRating.class);
-        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
-        return ratingService.create(gameRatingObject, logoImage);
+        return ratingService.create(gameRating, logoImage);
     }
 
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> updateRating(
-            @RequestPart("data") @Validated String gameRating,
+    public ResponseEntity<Map<String, ?>> updateRating(
+            @Valid @RequestPart("data") GameRating gameRating,
             @RequestPart("logo") MultipartFile logoImage
     ) {
-        GameRating gameRatingObject;
-        try {
-            gameRatingObject = new ObjectMapper()
-                    .readValue(gameRating, GameRating.class);
-        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
-        return ratingService.update(gameRatingObject, logoImage);
+        return ratingService.update(gameRating, logoImage);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteRating(
+    public ResponseEntity<Map<String, ?>> deleteRating(
             @RequestParam("id") short id
     ) {
         return ratingService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public ResponseEntity<?> hardDeleteRating(
+    public ResponseEntity<Map<String, ?>> hardDeleteRating(
             @RequestParam("id") short id
     ) {
         return ratingService.hardDelete(id);
@@ -77,14 +64,14 @@ public class GameRatingController {
 
     // Queries
     @GetMapping("/get/byname")
-    public ResponseEntity<MGameRating> getByName(
+    public ResponseEntity<Map<String, ?>> getByName(
             @RequestParam("name") String name
     ) {
         return ratingService.getByName(name);
     }
 
     @GetMapping("/get/byentity")
-    public ResponseEntity<?> getByRatingEntity(
+    public ResponseEntity<Map<String, ?>> getByRatingEntity(
             @RequestParam("name") String name,
             Pageable pageable
     ) {
@@ -92,7 +79,7 @@ public class GameRatingController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAll(
+    public ResponseEntity<Map<String, ?>> getAll(
             Pageable pageable
     ) {
         return ratingService.getAll(pageable);

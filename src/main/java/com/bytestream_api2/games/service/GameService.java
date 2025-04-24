@@ -8,18 +8,13 @@ import com.bytestream_api2.games.repository.GameCategoryRepository;
 import com.bytestream_api2.games.repository.GameRatingDescriptorRepository;
 import com.bytestream_api2.games.repository.GameRatingRepository;
 import com.bytestream_api2.games.repository.GameRepository;
-import com.bytestream_api2.games.utilities.DataConverter;
-import com.bytestream_api2.games.utilities.FilenameFormatter;
-import com.bytestream_api2.games.utilities.ImageResourceUploader;
-import com.bytestream_api2.games.utilities.ResourcePathProvider;
+import com.bytestream_api2.games.utilities.*;
 import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.misc.StaticResourcesPaths;
 
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 
-import jakarta.transaction.Transactional;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
@@ -194,71 +189,61 @@ public class GameService {
     }
 
     // CUD
-    @Transactional
-    public ResponseEntity<?> create(
+    public ResponseEntity<Map<String, ?>> create(
             Game game,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
-        Game newItem = null;
         try {
             this.resolveRelatedEntities(game);
 
-            newItem = this.gameRepository.saveAndFlush(game);
-            entityManager.refresh(newItem);
-
             // Check if it has at least one GameCategory.
-            if (newItem.getGameCategories().isEmpty()) {
-                gameRepository.delete(newItem);
+            if (game.getGameCategories().isEmpty())
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body("Game must have at least one related category.");
-            }
+                        .body(ResponseUtility.error("Game must have at least one related category."));
 
             // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
             for (
                     GameRatingEntity ratingEntityItem :
-                    newItem.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
+                    game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
             ) {
                 if (
-                        newItem.getGameRatings().stream()
+                        game.getGameRatings().stream()
                                 .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
                                 .count() > 1
-                ) {
-                    gameRepository.delete(newItem);
+                )
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                            .body("Game must be related to only one rating from a rating entity.");
-                }
+                            .body(ResponseUtility.error(
+                                    "Game must be related to only one rating from a rating entity."
+                            ));
             }
 
             // Try to upload images.
             if(
-                !this.uploadImage(coverImage, newItem, GameArtType.COVER_ART) ||
-                !this.uploadImage(landscapeImage, newItem, GameArtType.LANDSCAPE_ART)
-            ) {
-                gameRepository.delete(newItem);
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Unable to upload image file.");
-            }
+                !this.uploadImage(coverImage, game, GameArtType.COVER_ART) ||
+                !this.uploadImage(landscapeImage, game, GameArtType.LANDSCAPE_ART)
+            )
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(ResponseUtility.error("Unable to upload image file."));
+
+            Game result = this.gameRepository.save(game);
 
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(this.getMediaURIsOfList(List.of(new MGame(newItem, true))));
+                    .body(ResponseUtility.result(this.getMediaURIsOfList(List.of(new MGame(result, true)))));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch (Exception e) {
-            if(newItem != null)
-                gameRepository.delete(newItem);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    @Transactional
-    public ResponseEntity<?> update(
+    public ResponseEntity<Map<String, ?>> update(
             Game game,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
-        Game gameCurrentState = null;
         try {
-            gameCurrentState = gameRepository.findById(game.getId());
+            Game gameCurrentState = gameRepository.findById(game.getId());
             if (gameCurrentState == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
@@ -267,15 +252,10 @@ public class GameService {
             Game updateData = new Game(gameCurrentState);
             gameMapper.partialUpdateGame(updateData, game);
 
-            updateData = gameRepository.saveAndFlush(updateData);
-            entityManager.refresh(updateData);
-
             // Check if it has at least one GameCategory and one GameRating.
-            if (updateData.getGameCategories().isEmpty()) {
-                gameRepository.saveAndFlush(gameCurrentState);
+            if (updateData.getGameCategories().isEmpty())
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body("Game must have at least one related category.");
-            }
+                        .body(ResponseUtility.error("Game must have at least one related category."));
 
             // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
             for (
@@ -286,11 +266,11 @@ public class GameService {
                         updateData.getGameRatings().stream()
                                 .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
                                 .count() > 1
-                ) {
-                    gameRepository.saveAndFlush(gameCurrentState);
+                )
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                            .body("Game must be related to only one rating from a rating entity.");
-                }
+                            .body(ResponseUtility.error(
+                                    "Game must be related to only one rating from a rating entity.")
+                            );
             }
 
             // Try to upload images
@@ -300,43 +280,43 @@ public class GameService {
                             !this.uploadImage(coverImage, updateData, GameArtType.COVER_ART) ||
                             !this.uploadImage(landscapeImage, updateData, GameArtType.LANDSCAPE_ART)
                     )
-            ) {
-                gameRepository.saveAndFlush(gameCurrentState);
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Unable to upload image file.");
-            }
+            )
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(ResponseUtility.error("Unable to upload image file."));
 
-            return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIs(new MGame(updateData, true)));
+            this.gameRepository.save(updateData);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ResponseUtility.result(this.getMediaURIs(new MGame(updateData, true))));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch (Exception e) {
-            if (gameCurrentState != null)
-                gameRepository.saveAndFlush(gameCurrentState);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> delete(long id) {
+    public ResponseEntity<Map<String, ?>> delete(long id) {
         try {
             Game game = gameRepository.findById(id);
             game.setDeletedAt(new Date());
 
             gameRepository.save(game);
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> hardDelete(long id) {
+    public ResponseEntity<Map<String, ?>> hardDelete(long id) {
         try {
             this.gameRepository.delete(this.gameRepository.findById(id));
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
@@ -392,62 +372,65 @@ public class GameService {
         }
     }
 
-    public ResponseEntity<MGame> getByName(String name) {
+    public ResponseEntity<Map<String, ?>> getByName(String name) {
         Game game = gameRepository.findByName(name);
         if (game == null || game.getDeletedAt() != null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIs(new MGame(game, true)));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseUtility.result(this.getMediaURIs(new MGame(game, true))));
     }
 
-    public ResponseEntity<?> getByTitle(String title, Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getByTitle(String title, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByTitleContains(title, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIsOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
     }
 
-    public ResponseEntity<?> getByGameCategories(List<GameCategory> categories, Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getByGameCategories(List<GameCategory> categories, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByGameCategoriesContains(categories, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIsOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
     }
 
-    public ResponseEntity<?> getByGameRatings(List<GameRating> ratings, Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getByGameRatings(List<GameRating> ratings, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByGameRatingsContains(ratings, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIsOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
     }
 
-    public ResponseEntity<?> getByGameRatingDescriptors(List<GameRatingDescriptor> ratingDescriptors, Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getByGameRatingDescriptors(
+            List<GameRatingDescriptor> ratingDescriptors, Pageable pageable
+    ) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByGameRatingDescriptorsContains(ratingDescriptors, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIsOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
     }
 
-    public ResponseEntity<?> getAll(Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getMediaURIsOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
     }
 
 }

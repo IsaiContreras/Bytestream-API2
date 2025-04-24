@@ -1,6 +1,9 @@
 package com.bytestream_api2.games.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,9 +24,17 @@ public class GameRatingDescriptor implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
+    @NotBlank(message="Field 'name' is mandatory.")
+    @Size(max=31, message="Field 'name' must be less than 31 characters long.")
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^[a-z0-9\\p{Punct}&&[^_]]+(-[a-z0-9\\p{Punct}&&[^_]]+)*$"
+    )
     private String name;
 
     @Column(name="description", nullable=false, length=1023)
+    @NotBlank(message="Field 'description' is mandatory.")
+    @Size(max=1023, message="Field 'description' must be less than 1023 characters long.")
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)
@@ -40,6 +51,7 @@ public class GameRatingDescriptor implements Serializable {
     // Relations
     @ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.MERGE, optional=false)
     @JoinColumn(name="entity_id")
+    @jakarta.validation.constraints.NotNull(message="Field 'gameRatingEntity' is mandatory.")
     private GameRatingEntity gameRatingEntity;
 
     // -- PUBLIC --

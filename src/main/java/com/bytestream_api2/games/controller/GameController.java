@@ -3,22 +3,20 @@ package com.bytestream_api2.games.controller;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.bytestream_api2.games.entity.Game;
-import com.bytestream_api2.games.model.MGame;
 import com.bytestream_api2.games.service.GameService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/games")
@@ -41,42 +39,32 @@ public class GameController {
     // -- PUBLIC --
     // CUD
     @PostMapping("/create")
-    public ResponseEntity<?> addNewGame(
-            @RequestPart("data") @Validated String game,
+    public ResponseEntity<Map<String, ?>> addNewGame(
+            @Valid @RequestPart("data") Game game,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
-        Game gameObject;
-        try {
-            gameObject = new ObjectMapper()
-                    .readValue(game, Game.class);
-        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
-        return this.gameService.create(gameObject, coverImage, landscapeImage);
+        return this.gameService.create(game, coverImage, landscapeImage);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> updateGame(
-            @RequestPart("data") @Validated String game,
+    public ResponseEntity<Map<String, ?>> updateGame(
+            @Valid @RequestPart("data") Game game,
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
-        Game gameObject;
-        try {
-            gameObject = new ObjectMapper()
-                    .readValue(game, Game.class);
-        } catch (Exception e) { return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage()); }
-        return this.gameService.update(gameObject, coverImage, landscapeImage);
+        return this.gameService.update(game, coverImage, landscapeImage);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteGame(
+    public ResponseEntity<Map<String, ?>> deleteGame(
             @RequestParam("id") long id
     ) {
         return this.gameService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public ResponseEntity<?> hardDeleteGame(
+    public ResponseEntity<Map<String, ?>> hardDeleteGame(
             @RequestParam("id") long id
     ) {
         return this.gameService.hardDelete(id);
@@ -84,14 +72,14 @@ public class GameController {
 
     // Queries
     @GetMapping("/get/byname")
-    public ResponseEntity<MGame> getGameByName(
+    public ResponseEntity<Map<String, ?>> getGameByName(
             @RequestParam("name") String name
     ) {
         return this.gameService.getByName(name);
     }
 
     @GetMapping("/get/bytitle")
-    public ResponseEntity<?> getGameByTitle(
+    public ResponseEntity<Map<String, ?>> getGameByTitle(
             @RequestParam("title") String title,
             Pageable pageable
     ) {
@@ -99,7 +87,7 @@ public class GameController {
     }
 
     @GetMapping("/get/bycategories")
-    public ResponseEntity<?> getGamesByCategories(
+    public ResponseEntity<Map<String, ?>> getGamesByCategories(
             @RequestParam("categories") List<GameCategory> categories,
             Pageable pageable
     ) {
@@ -107,7 +95,7 @@ public class GameController {
     }
 
     @GetMapping("/get/byratings")
-    public ResponseEntity<?> getGamesByRatings(
+    public ResponseEntity<Map<String, ?>> getGamesByRatings(
             @RequestParam("ratings") List<GameRating> ratings,
             Pageable pageable
     ) {
@@ -115,7 +103,7 @@ public class GameController {
     }
 
     @GetMapping("/get/bydescriptors")
-    public ResponseEntity<?> getGamesByDescriptors(
+    public ResponseEntity<Map<String, ?>> getGamesByDescriptors(
             @RequestParam("descriptors") List<GameRatingDescriptor> ratingDescriptors,
             Pageable pageable
     ) {
@@ -123,7 +111,7 @@ public class GameController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAllGames(
+    public ResponseEntity<Map<String, ?>> getAllGames(
             Pageable pageable
     ) {
         return this.gameService.getAll(pageable);

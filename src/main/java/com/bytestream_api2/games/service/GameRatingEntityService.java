@@ -6,10 +6,7 @@ import com.bytestream_api2.games.misc.FilenameFormat;
 import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.misc.StaticResourcesPaths;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
-import com.bytestream_api2.games.utilities.DataConverter;
-import com.bytestream_api2.games.utilities.FilenameFormatter;
-import com.bytestream_api2.games.utilities.ImageResourceUploader;
-import com.bytestream_api2.games.utilities.ResourcePathProvider;
+import com.bytestream_api2.games.utilities.*;
 import com.bytestream_api2.games.entity.GameRatingEntity;
 import com.bytestream_api2.games.model.MGameRatingEntity;
 
@@ -136,72 +133,70 @@ public class GameRatingEntityService {
     }
 
     // CUD
-    public ResponseEntity<?> create(@NotNull GameRatingEntity gameRatingEntity, @NotNull MultipartFile logoImage) {
-        GameRatingEntity newItem = null;
+    public ResponseEntity<Map<String, ?>> create(
+            @NotNull GameRatingEntity gameRatingEntity, @NotNull MultipartFile logoImage
+    ) {
         try {
-            newItem = ratingEntityRepository.save(gameRatingEntity);
+            if (!this.uploadLogoImage(logoImage, gameRatingEntity))
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(ResponseUtility.error("Unable to upload image file."));
 
-            if (!this.uploadLogoImage(logoImage, newItem)) {
-                ratingEntityRepository.delete(newItem);
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body("Unable to upload image file.");
-            }
+            GameRatingEntity result = ratingEntityRepository.save(gameRatingEntity);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(this.getLogoURI(new MGameRatingEntity(newItem)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ResponseUtility.result(this.getLogoURI(new MGameRatingEntity(result))));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch(Exception e) {
-            if (newItem != null)
-                ratingEntityRepository.delete(newItem);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> update(@NotNull GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
+    public ResponseEntity<Map<String, ?>> update(@NotNull GameRatingEntity gameRatingEntity, MultipartFile logoImage) {
         try {
             GameRatingEntity ratingEntityToUpdate = ratingEntityRepository.findById(gameRatingEntity.getId());
+            if (ratingEntityToUpdate == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-            if (
-                    !logoImage.isEmpty() &&
-                    (
-                            ratingEntityToUpdate == null ||
-                            !this.uploadLogoImage(logoImage, ratingEntityToUpdate)
-                    )
-            )
-                return ResponseEntity.unprocessableEntity().body("Unable to upload image file.");
+            if (!logoImage.isEmpty() && (!this.uploadLogoImage(logoImage, ratingEntityToUpdate)))
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                        .body(ResponseUtility.error("Unable to upload image file."));
 
             ratingEntityMapper.partialUpdateRatingEntity(ratingEntityToUpdate, gameRatingEntity);
 
             GameRatingEntity result = ratingEntityRepository.save(ratingEntityToUpdate);
-            return ResponseEntity.status(HttpStatus.OK).body(this.getLogoURI(new MGameRatingEntity(result)));
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(ResponseUtility.result(this.getLogoURI(new MGameRatingEntity(result))));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> delete(short id) {
+    public ResponseEntity<Map<String, ?>> delete(short id) {
         try {
             GameRatingEntity gameRatingEntity = ratingEntityRepository.findById(id);
             gameRatingEntity.setDeletedAt(new Date());
 
             ratingEntityRepository.save(gameRatingEntity);
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> hardDelete(short id) {
+    public ResponseEntity<Map<String, ?>> hardDelete(short id) {
         try {
             ratingEntityRepository.delete(ratingEntityRepository.findById(id));
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
@@ -255,22 +250,23 @@ public class GameRatingEntityService {
         }
     }
 
-    public ResponseEntity<MGameRatingEntity> getByName(String name) {
+    public ResponseEntity<Map<String, ?>> getByName(String name) {
         GameRatingEntity ratingEntity = ratingEntityRepository.findByName(name);
         if (ratingEntity == null || ratingEntity.getDeletedAt() != null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getLogoURI(new MGameRatingEntity(ratingEntity)));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseUtility.result(this.getLogoURI(new MGameRatingEntity(ratingEntity))));
     }
 
-    public ResponseEntity<?> getAll(Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
         List<MGameRatingEntity> results = ratingEntityConverter
                 .parseToList(ratingEntityRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.getLogoURIOfList(results));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getLogoURIOfList(results)));
     }
 
 }

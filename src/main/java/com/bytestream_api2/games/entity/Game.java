@@ -1,6 +1,9 @@
 package com.bytestream_api2.games.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,16 +24,27 @@ public class Game implements Serializable {
     private Long id;
 
     @Column(name="name", unique=true, nullable=false, length=63)
+    @NotBlank(message="Field 'name' is mandatory.")
+    @Size(max=63, message="Field 'name' must be less than 63 characters long.")
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^[a-z0-9\\p{Punct}&&[^_]]+(-[a-z0-9\\p{Punct}&&[^_]]+)*$"
+    )
     private String name;
 
     @Column(name="title", nullable=false, length=63)
+    @NotBlank(message="Field 'title' is mandatory.")
+    @Size(max=63, message="Field 'title' must be less than 63 characters long.")
     private String title;
 
     @Column(name="synopsis", nullable=false, length=4095)
+    @NotBlank(message="Field 'synopsis' is mandatory.")
+    @Size(max=4095, message="Field 'synopsis' must be less than 4095 characters long.")
     private String synopsis;
 
     @Column(name="release_date", nullable=false)
     @Temporal(TemporalType.DATE) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
+    @jakarta.validation.constraints.NotNull(message="Field 'releaseDate' is mandatory.")
     private Date releaseDate;
 
     @Column(name="created_at", nullable=false, updatable=false)
@@ -51,6 +65,7 @@ public class Game implements Serializable {
             joinColumns = @JoinColumn(name="game_id"),
             inverseJoinColumns = @JoinColumn(name="catego_id")
     )
+    @Size(min=1, message="Field 'gameCategories' must have at least one element in list.")
     private List<GameCategory> gameCategories;
 
     @ManyToMany

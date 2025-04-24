@@ -1,16 +1,15 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
-import com.bytestream_api2.games.model.MGameRatingDescriptor;
 import com.bytestream_api2.games.service.GameRatingDescriptorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/rating_descriptor")
@@ -32,28 +31,28 @@ public class GameRatingDescriptorController {
     // -- PUBLIC --
     // CUD
     @PostMapping("/create")
-    public ResponseEntity<?> addNewRatingDescriptor(
-            @RequestBody @Validated GameRatingDescriptor ratingDescriptor
+    public ResponseEntity<Map<String, ?>> addNewRatingDescriptor(
+            @Valid @RequestBody GameRatingDescriptor ratingDescriptor
     ) {
         return ratingDescriptorService.create(ratingDescriptor);
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> updateRatingDescriptor(
-            @RequestBody @Validated GameRatingDescriptor ratingDescriptor
+    public ResponseEntity<Map<String, ?>> updateRatingDescriptor(
+            @Valid @RequestBody GameRatingDescriptor ratingDescriptor
     ) {
         return ratingDescriptorService.update(ratingDescriptor);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteRatingDescriptor(
+    public ResponseEntity<Map<String, ?>> deleteRatingDescriptor(
             @RequestParam("id") short id
     ) {
         return ratingDescriptorService.delete(id);
     }
 
     @DeleteMapping("/harddelete")
-    public ResponseEntity<String> hardDeleteRatingDescriptor(
+    public ResponseEntity<Map<String, ?>> hardDeleteRatingDescriptor(
             @RequestParam("id") short id
     ) {
         return ratingDescriptorService.hardDelete(id);
@@ -61,14 +60,14 @@ public class GameRatingDescriptorController {
 
     // Queries
     @GetMapping("/get/byname")
-    public ResponseEntity<MGameRatingDescriptor> getByName(
+    public ResponseEntity<Map<String, ?>> getByName(
             @RequestParam("name") String name
     ) {
         return ratingDescriptorService.getByName(name);
     }
 
     @GetMapping("/get/byentity")
-    public ResponseEntity<?> getByRatingEntity(
+    public ResponseEntity<Map<String, ?>> getByRatingEntity(
             @RequestParam("name") String name,
             Pageable pageable
     ) {
@@ -76,7 +75,7 @@ public class GameRatingDescriptorController {
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAll(
+    public ResponseEntity<Map<String, ?>> getAll(
             Pageable pageable
     ) {
         return ratingDescriptorService.getAll(pageable);

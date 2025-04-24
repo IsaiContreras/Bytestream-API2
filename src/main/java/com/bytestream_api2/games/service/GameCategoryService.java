@@ -2,11 +2,11 @@ package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameCategoryConverter;
 import com.bytestream_api2.games.mapper.GameCategoryMapper;
-import com.bytestream_api2.games.model.MGame;
 import com.bytestream_api2.games.repository.GameCategoryRepository;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.model.MGameCategory;
 
+import com.bytestream_api2.games.utilities.ResponseUtility;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -16,12 +16,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Service("game_category_service")
 public class GameCategoryService {
@@ -56,18 +56,18 @@ public class GameCategoryService {
     }
 
     // CUD
-    public ResponseEntity<?> create(GameCategory gameCategory) {
+    public ResponseEntity<Map<String, ?>> create(GameCategory gameCategory) {
         try {
             GameCategory result = gameCategoryRepository.save(gameCategory);
-            return ResponseEntity.status(HttpStatus.CREATED).body(new MGameCategory(result));
+            return ResponseEntity.status(HttpStatus.CREATED).body(ResponseUtility.result(result));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> update(GameCategory gameCategory) {
+    public ResponseEntity<Map<String, ?>> update(GameCategory gameCategory) {
         try {
             GameCategory categoryToUpdate = gameCategoryRepository.findById(gameCategory.getId());
             if (categoryToUpdate == null)
@@ -76,66 +76,66 @@ public class GameCategoryService {
             categoryMapper.partialUpdateCategory(categoryToUpdate, gameCategory);
 
             gameCategoryRepository.save(categoryToUpdate);
-            return ResponseEntity.status(HttpStatus.OK).body(new MGameCategory(categoryToUpdate));
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(categoryToUpdate));
         } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(dae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> delete(short id) {
+    public ResponseEntity<Map<String, ?>> delete(short id) {
         try {
             GameCategory category = gameCategoryRepository.findById(id);
             category.setDeletedAt(new Date());
 
             gameCategoryRepository.save(category);
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(category));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
-    public ResponseEntity<?> hardDelete(short id) {
+    public ResponseEntity<Map<String, ?>> hardDelete(short id) {
         try {
             gameCategoryRepository.delete(gameCategoryRepository.findById(id));
-            return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully!");
+            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erdae.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
         }
     }
 
     // Queries
-    public ResponseEntity<MGameCategory> getByName(String name){
+    public ResponseEntity<Map<String, ?>> getByName(String name){
         GameCategory category = gameCategoryRepository.findByName(name);
         if (category == null || category.getDeletedAt() != null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(new MGameCategory(category));
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(category));
     }
 
-    public ResponseEntity<?> getByNameContains(String name, Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getByNameContains(String name, Pageable pageable) {
         List<MGameCategory> results = gameCategoryConverter
                 .parseToList(gameCategoryRepository.findByNameContains(name, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(results);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(results));
     }
 
-    public ResponseEntity<?> getAll(Pageable pageable) {
+    public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
         List<MGameCategory> results = gameCategoryConverter
                 .parseToList(gameCategoryRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No results.");
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
 
-        return ResponseEntity.status(HttpStatus.OK).body(results);
+        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(results));
     }
 
 }

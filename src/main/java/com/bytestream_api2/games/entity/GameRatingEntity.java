@@ -1,6 +1,8 @@
 package com.bytestream_api2.games.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,15 +23,23 @@ public class GameRatingEntity implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=15)
+    @NotBlank(message="Field 'name' is mandatory.")
+    @Size(max=15, message="Field 'name' must be less than 15 characters long.")
     private String name;
 
     @Column(name="long_name", nullable=false, length=127)
+    @NotBlank(message="Field 'longName' is mandatory.")
+    @Size(max=127, message="Field 'longName' must be less than 127 characters long.")
     private String longName;
 
     @Column(name="location", nullable=false, length=511)
+    @NotBlank(message="Field 'location' is mandatory.")
+    @Size(max=511, message="Field 'location' must be less than 511 characters long.")
     private String location;
 
     @Column(name="description", nullable=false, length=511)
+    @NotBlank(message="Field 'description' is mandatory.")
+    @Size(max=511, message="Field 'description' must be less than 511 characters long.")
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)
