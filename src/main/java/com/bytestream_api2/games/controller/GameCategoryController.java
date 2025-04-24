@@ -1,0 +1,85 @@
+package com.bytestream_api2.games.controller;
+
+import com.bytestream_api2.games.entity.GameCategory;
+import com.bytestream_api2.games.model.MGameCategory;
+import com.bytestream_api2.games.service.GameCategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/categories")
+public class GameCategoryController {
+
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
+    // Entity Components
+    @Autowired
+    @Qualifier("game_category_service")
+    private GameCategoryService gameCategoryService;
+
+    // -- PUBLIC --
+
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
+    // CUD
+    @PostMapping("/create")
+    public ResponseEntity<?> addNewGameCategory(
+            @RequestBody @Validated GameCategory gameCategory
+    ) {
+        return this.gameCategoryService.create(gameCategory);
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<?> updateGameCategory(
+            @RequestBody @Validated GameCategory gameCategory
+    ) {
+        return this.gameCategoryService.update(gameCategory);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteGameCategory(
+            @RequestParam("id") short id
+    ) {
+        return this.gameCategoryService.delete(id);
+    }
+
+    @DeleteMapping("/harddelete")
+    public ResponseEntity<?> hardDeleteGameCategory(
+            @RequestParam("id") short id
+    ) {
+        return gameCategoryService.hardDelete(id);
+    }
+
+    // Queries
+    @GetMapping("/get/byname")
+    public ResponseEntity<MGameCategory> getByName(
+            @RequestParam("name") String name
+    ) {
+        return this.gameCategoryService.getByName(name);
+    }
+
+    @GetMapping("/get/bynamematch")
+    public ResponseEntity<?> getByNameContains(
+            @RequestParam("name") String name, Pageable pageable
+    ) {
+        return this.gameCategoryService.getByNameContains(name, pageable);
+    }
+
+    @GetMapping("/get")
+    public ResponseEntity<?> getAllCategories(
+            Pageable pageable
+    ) {
+        return this.gameCategoryService.getAll(pageable);
+    }
+
+}

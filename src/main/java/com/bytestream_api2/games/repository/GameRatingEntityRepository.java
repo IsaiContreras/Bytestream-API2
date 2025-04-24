@@ -1,0 +1,26 @@
+package com.bytestream_api2.games.repository;
+
+import com.bytestream_api2.games.entity.GameRatingEntity;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
+
+import java.io.Serializable;
+
+@Repository("game_rating_entity_repository")
+public interface GameRatingEntityRepository
+        extends JpaRepository<GameRatingEntity, Serializable>,
+        PagingAndSortingRepository<GameRatingEntity, Serializable>
+{
+
+    // -- [[ METHODS ]] --
+    public abstract GameRatingEntity findById(Short id);
+
+    public abstract GameRatingEntity findByName(String name);
+
+    public abstract @NotNull Page<GameRatingEntity> findAll(@NotNull Pageable pageable);
+
+}
