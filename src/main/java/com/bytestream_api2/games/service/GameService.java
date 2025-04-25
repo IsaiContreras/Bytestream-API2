@@ -2,6 +2,9 @@ package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameConverter;
 import com.bytestream_api2.games.entity.*;
+import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
+import com.bytestream_api2.games.exception.MediaUploadFailedException;
 import com.bytestream_api2.games.misc.FilenameFormat;
 import com.bytestream_api2.games.misc.GameArtType;
 import com.bytestream_api2.games.repository.GameCategoryRepository;
@@ -20,8 +23,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -189,135 +190,104 @@ public class GameService {
     }
 
     // CUD
-    public ResponseEntity<Map<String, ?>> create(
+    public MGame create(
             Game game,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
-        try {
-            this.resolveRelatedEntities(game);
+        this.resolveRelatedEntities(game);
 
-            // Check if it has at least one GameCategory.
-            if (game.getGameCategories().isEmpty())
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Game must have at least one related category."));
+        // Check if it has at least one GameCategory.
+        if (game.getGameCategories().isEmpty())
+            throw new InvalidEntityRelationsException("Game must have at least one related category.");
 
-            // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
-            for (
-                    GameRatingEntity ratingEntityItem :
-                    game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
-            ) {
-                if (
-                        game.getGameRatings().stream()
-                                .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
-                                .count() > 1
-                )
-                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                            .body(ResponseUtility.error(
-                                    "Game must be related to only one rating from a rating entity."
-                            ));
-            }
-
-            // Try to upload images.
-            if(
-                !this.uploadImage(coverImage, game, GameArtType.COVER_ART) ||
-                !this.uploadImage(landscapeImage, game, GameArtType.LANDSCAPE_ART)
-            )
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Unable to upload image file."));
-
-            Game result = this.gameRepository.save(game);
-
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ResponseUtility.result(this.getMediaURIsOfList(List.of(new MGame(result, true)))));
-        } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
-    }
-
-    public ResponseEntity<Map<String, ?>> update(
-            Game game,
-            MultipartFile coverImage,
-            MultipartFile landscapeImage
-    ) {
-        try {
-            Game gameCurrentState = gameRepository.findById(game.getId());
-            if (gameCurrentState == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-            this.resolveRelatedEntities(game);
-
-            Game updateData = new Game(gameCurrentState);
-            gameMapper.partialUpdateGame(updateData, game);
-
-            // Check if it has at least one GameCategory and one GameRating.
-            if (updateData.getGameCategories().isEmpty())
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Game must have at least one related category."));
-
-            // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
-            for (
-                    GameRatingEntity ratingEntityItem :
-                    updateData.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
-            ) {
-                if (
-                        updateData.getGameRatings().stream()
-                                .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
-                                .count() > 1
-                )
-                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                            .body(ResponseUtility.error(
-                                    "Game must be related to only one rating from a rating entity.")
-                            );
-            }
-
-            // Try to upload images
+        // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
+        for (
+                GameRatingEntity ratingEntityItem :
+                game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
+        ) {
             if (
-                    !(coverImage.isEmpty() || landscapeImage.isEmpty()) &&
-                    (
-                            !this.uploadImage(coverImage, updateData, GameArtType.COVER_ART) ||
-                            !this.uploadImage(landscapeImage, updateData, GameArtType.LANDSCAPE_ART)
-                    )
+                    game.getGameRatings().stream()
+                            .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
+                            .count() > 1
             )
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Unable to upload image file."));
-
-            this.gameRepository.save(updateData);
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(ResponseUtility.result(this.getMediaURIs(new MGame(updateData, true))));
-        } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
+                throw new InvalidEntityRelationsException(
+                        "Game must be related to only one rating from a rating entity."
+                );
         }
+
+        // Try to upload images.
+        if(
+            !this.uploadImage(coverImage, game, GameArtType.COVER_ART) ||
+            !this.uploadImage(landscapeImage, game, GameArtType.LANDSCAPE_ART)
+        )
+            throw new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded.");
+
+        Game result = this.gameRepository.save(game);
+
+        return this.getMediaURIs(new MGame(result, true));
     }
 
-    public ResponseEntity<Map<String, ?>> delete(long id) {
-        try {
-            Game game = gameRepository.findById(id);
-            game.setDeletedAt(new Date());
+    public MGame update(
+            Game game,
+            MultipartFile coverImage,
+            MultipartFile landscapeImage
+    ) {
+        Game gameCurrentState = gameRepository.findById(game.getId());
+        if (gameCurrentState == null)
+            throw new EntityNotFoundException("Couldn't find a Game with this ID.");
 
-            gameRepository.save(game);
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
-        } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
+        this.resolveRelatedEntities(game);
+
+        Game updateData = new Game(gameCurrentState);
+        gameMapper.partialUpdateGame(updateData, game);
+
+        // Check if it has at least one GameCategory and one GameRating.
+        if (updateData.getGameCategories().isEmpty())
+            throw new InvalidEntityRelationsException("Game must have at least one related category.");
+
+        // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
+        for (
+                GameRatingEntity ratingEntityItem :
+                updateData.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
+        ) {
+            if (
+                    updateData.getGameRatings().stream()
+                            .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
+                            .count() > 1
+            )
+                throw new InvalidEntityRelationsException(
+                        "Game must be related to only one rating from a rating entity."
+                );
         }
+
+        // Try to upload images
+        if (
+                !(coverImage.isEmpty() || landscapeImage.isEmpty()) &&
+                (
+                        !this.uploadImage(coverImage, updateData, GameArtType.COVER_ART) ||
+                        !this.uploadImage(landscapeImage, updateData, GameArtType.LANDSCAPE_ART)
+                )
+        )
+            throw new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded.");
+
+        this.gameRepository.save(updateData);
+
+        return this.getMediaURIs(new MGame(updateData, true));
     }
 
-    public ResponseEntity<Map<String, ?>> hardDelete(long id) {
-        try {
-            this.gameRepository.delete(this.gameRepository.findById(id));
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
-        } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
+    public void delete(long id) {
+        Game game = gameRepository.findById(id);
+        if (game == null || game.getDeletedAt() != null)
+            throw new EntityNotFoundException("Couldn't find a Game with this ID.");
+
+        game.setDeletedAt(new Date());
+
+        gameRepository.save(game);
+    }
+
+    public void hardDelete(long id) {
+        this.gameRepository.delete(this.gameRepository.findById(id));
     }
 
     // Queries
@@ -372,65 +342,66 @@ public class GameService {
         }
     }
 
-    public ResponseEntity<Map<String, ?>> getByName(String name) {
+    public MGame getByName(String name) {
         Game game = gameRepository.findByName(name);
         if (game == null || game.getDeletedAt() != null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw new EntityNotFoundException("Couldn't find a Game with this name.");
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseUtility.result(this.getMediaURIs(new MGame(game, true))));
+        return this.getMediaURIs(new MGame(game, true));
     }
 
-    public ResponseEntity<Map<String, ?>> getByTitle(String title, Pageable pageable) {
+    public List<MGame> getByTitle(String title, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByTitleContains(title, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
+        return this.getMediaURIsOfList(results);
     }
 
-    public ResponseEntity<Map<String, ?>> getByGameCategories(List<GameCategory> categories, Pageable pageable) {
+    public List<MGame> getByGameCategories(List<GameCategory> categories, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByGameCategoriesContains(categories, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
+        return this.getMediaURIsOfList(results);
     }
 
-    public ResponseEntity<Map<String, ?>> getByGameRatings(List<GameRating> ratings, Pageable pageable) {
+    public List<MGame> getByGameRatings(List<GameRating> ratings, Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findByGameRatingsContains(ratings, pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
+        return this.getMediaURIsOfList(results);
     }
 
-    public ResponseEntity<Map<String, ?>> getByGameRatingDescriptors(
+    public List<MGame> getByGameRatingDescriptors(
             List<GameRatingDescriptor> ratingDescriptors, Pageable pageable
     ) {
         List<MGame> results = gameConverter
-                .parseToList(gameRepository.findByGameRatingDescriptorsContains(ratingDescriptors, pageable).getContent())
+                .parseToList(gameRepository.findByGameRatingDescriptorsContains(
+                        ratingDescriptors, pageable
+                ).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
+        return this.getMediaURIsOfList(results);
     }
 
-    public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
+    public List<MGame> getAll(Pageable pageable) {
         List<MGame> results = gameConverter
                 .parseToList(gameRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getMediaURIsOfList(results)));
+        return this.getMediaURIsOfList(results);
     }
 
 }

@@ -1,13 +1,14 @@
 package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameRatingConverter;
+import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.MediaUploadFailedException;
 import com.bytestream_api2.games.mapper.GameRatingMapper;
 import com.bytestream_api2.games.misc.FilenameFormat;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
 import com.bytestream_api2.games.repository.GameRatingRepository;
 import com.bytestream_api2.games.utilities.*;
 import com.bytestream_api2.games.entity.GameRating;
-import com.bytestream_api2.games.entity.GameRatingEntity;
 import com.bytestream_api2.games.misc.ResourcePath;
 import com.bytestream_api2.games.misc.StaticResourcesPaths;
 import com.bytestream_api2.games.model.MGameRating;
@@ -24,8 +25,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -137,81 +136,50 @@ public class GameRatingService {
     }
 
     // CRUD
-    public ResponseEntity<Map<String, ?>> create(@NotNull GameRating rating, @NotNull MultipartFile logo) {
-        GameRating newItem = null;
-        try {
-            rating.setGameRatingEntity(ratingEntityRepository.findByName(
-                    rating.getGameRatingEntity() != null ? rating.getGameRatingEntity().getName() : null
-            ));
+    public MGameRating create(@NotNull GameRating rating, @NotNull MultipartFile logo) {
+        rating.setGameRatingEntity(ratingEntityRepository.findByName(
+                rating.getGameRatingEntity() != null ? rating.getGameRatingEntity().getName() : null
+        ));
 
-            if (!this.uploadLogoImage(logo, rating))
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Unable to upload image file."));
+        if (!this.uploadLogoImage(logo, rating))
+            throw new MediaUploadFailedException("Couldn't upload Logo image file.");
 
-            GameRating result = ratingRepository.save(rating);
-
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ResponseUtility.result(this.getLogoURI(new MGameRating(result, true))));
-        } catch(DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
+        return this.getLogoURI(new MGameRating(ratingRepository.save(rating), true));
     }
 
-    public ResponseEntity<Map<String, ?>> update(@NotNull GameRating rating, MultipartFile logo) {
-        try {
-            GameRating ratingToUpdate = ratingRepository.findById(rating.getId());
-            if (ratingToUpdate == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public MGameRating update(@NotNull GameRating rating, MultipartFile logo) {
+        GameRating ratingToUpdate = ratingRepository.findById(rating.getId());
+        if (ratingToUpdate == null)
+            throw new EntityNotFoundException("Couldn't find a Rating with this ID.");
 
-            ratingMapper.partialUpdateRating(ratingToUpdate, rating);
+        if (
+                !logo.isEmpty() &&
+                (!this.uploadLogoImage(logo, ratingToUpdate))
+        )
+            throw new MediaUploadFailedException("Couldn't upload Logo image file.");
 
-            if (
-                    !logo.isEmpty() &&
-                    (!this.uploadLogoImage(logo, ratingToUpdate))
-            )
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body(ResponseUtility.error("Unable to upload image file."));
+        if (rating.getGameRatingEntity() != null)
+            rating.setGameRatingEntity(
+                    ratingEntityRepository.findByName(rating.getGameRatingEntity().getName())
+            );
 
-            if (rating.getGameRatingEntity() != null)
-                rating.setGameRatingEntity(
-                        ratingEntityRepository.findByName(rating.getGameRatingEntity().getName())
-                );
+        ratingMapper.partialUpdateRating(ratingToUpdate, rating);
 
-            GameRating result = ratingRepository.save(ratingToUpdate);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(ResponseUtility.result(this.getLogoURI(new MGameRating(result, true))));
-        } catch(DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtility.error(dae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
+        return this.getLogoURI(new MGameRating(ratingRepository.save(ratingToUpdate), true));
     }
 
-    public ResponseEntity<Map<String, ?>> delete(short id) {
-        try {
-            GameRating rating = ratingRepository.findById(id);
-            rating.setDeletedAt(new Date());
+    public void delete(short id) {
+        GameRating rating = ratingRepository.findById(id);
+        if (rating == null || rating.getDeletedAt() != null)
+            throw new EntityNotFoundException("Couldn't find a Rating with this ID");
 
-            ratingRepository.save(rating);
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
-        } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
+        rating.setDeletedAt(new Date());
+
+        ratingRepository.save(rating);
     }
 
-    public ResponseEntity<Map<String, ?>> hardDelete(short id) {
-        try {
-            ratingRepository.delete(ratingRepository.findById(id));
-            return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result("Deleted successfully!"));
-        } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ResponseUtility.error(erdae.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ResponseUtility.error(e.getMessage()));
-        }
+    public void hardDelete(short id) {
+        ratingRepository.delete(ratingRepository.findById(id));
     }
 
     // Queries
@@ -264,37 +232,34 @@ public class GameRatingService {
         }
     }
 
-    public ResponseEntity<Map<String, ?>> getByName(String name) {
+    public MGameRating getByName(String name) {
         GameRating rating = ratingRepository.findByName(name);
         if (rating == null || rating.getDeletedAt() != null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw new EntityNotFoundException("Couldn't find a Rating with this name.");
 
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ResponseUtility.result(this.getLogoURI(new MGameRating(rating, true))));
+        return this.getLogoURI(new MGameRating(rating, true));
     }
 
-    public ResponseEntity<Map<String, ?>> getByGameRatingEntity(String name, Pageable pageable) {
-        GameRatingEntity ratingEntity = ratingEntityRepository.findByName(name);
-        if (ratingEntity == null || ratingEntity.getDeletedAt() != null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
+    public List<MGameRating> getByGameRatingEntity(String name, Pageable pageable) {
         List<MGameRating> results = ratingConverter
-                .parseToList(ratingRepository.findByGameRatingEntity(ratingEntity, pageable).getContent())
+                .parseToList(ratingRepository.findByGameRatingEntity(
+                        ratingEntityRepository.findByName(name), pageable
+                ).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getLogoURIOfList(results)));
+        return this.getLogoURIOfList(results);
     }
 
-    public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
+    public List<MGameRating> getAll(Pageable pageable) {
         List<MGameRating> results = ratingConverter
                 .parseToList(ratingRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ResponseUtility.result("No results."));
+            throw new EntityNotFoundException("No results for this search.");
 
-        return ResponseEntity.status(HttpStatus.OK).body(ResponseUtility.result(this.getLogoURIOfList(results)));
+        return this.getLogoURIOfList(results);
     }
 
 }

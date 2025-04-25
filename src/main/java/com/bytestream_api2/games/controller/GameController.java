@@ -3,9 +3,16 @@ package com.bytestream_api2.games.controller;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
+import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
+import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.utilities.BodyFormatter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.data.domain.Pageable;
@@ -44,7 +51,18 @@ public class GameController {
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
-        return this.gameService.create(game, coverImage, landscapeImage);
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(BodyFormatter.result(
+                            this.gameService.create(game, coverImage, landscapeImage)
+                    ));
+        } catch (MediaUploadFailedException mufe) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
+        } catch (DataAccessException | InvalidEntityRelationsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @PatchMapping("/update")
@@ -53,21 +71,49 @@ public class GameController {
             @RequestPart("cover") MultipartFile coverImage,
             @RequestPart("landscape") MultipartFile landscapeImage
     ) {
-        return this.gameService.update(game, coverImage, landscapeImage);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            this.gameService.update(game, coverImage, landscapeImage)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (MediaUploadFailedException mufe) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
+        } catch (DataAccessException | InvalidEntityRelationsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/delete")
     public ResponseEntity<Map<String, ?>> deleteGame(
             @RequestParam("id") long id
     ) {
-        return this.gameService.delete(id);
+        try {
+            gameService.delete(id);
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/harddelete")
     public ResponseEntity<Map<String, ?>> hardDeleteGame(
             @RequestParam("id") long id
     ) {
-        return this.gameService.hardDelete(id);
+        try {
+            gameService.hardDelete(id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result("Hard deleted successfully!"));
+        } catch (EmptyResultDataAccessException erdae) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(erdae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     // Queries
@@ -75,7 +121,16 @@ public class GameController {
     public ResponseEntity<Map<String, ?>> getGameByName(
             @RequestParam("name") String name
     ) {
-        return this.gameService.getByName(name);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            this.gameService.getByName(name)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get/bytitle")
@@ -83,7 +138,18 @@ public class GameController {
             @RequestParam("title") String title,
             Pageable pageable
     ) {
-        return gameService.getByTitle(title, pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            gameService.getByTitle(title, pageable)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (DataAccessException dae) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get/bycategories")
@@ -91,7 +157,18 @@ public class GameController {
             @RequestParam("categories") List<GameCategory> categories,
             Pageable pageable
     ) {
-        return gameService.getByGameCategories(categories, pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            gameService.getByGameCategories(categories, pageable)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (DataAccessException dae) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get/byratings")
@@ -99,7 +176,18 @@ public class GameController {
             @RequestParam("ratings") List<GameRating> ratings,
             Pageable pageable
     ) {
-        return gameService.getByGameRatings(ratings, pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            gameService.getByGameRatings(ratings, pageable)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (DataAccessException dae) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get/bydescriptors")
@@ -107,14 +195,34 @@ public class GameController {
             @RequestParam("descriptors") List<GameRatingDescriptor> ratingDescriptors,
             Pageable pageable
     ) {
-        return gameService.getByGameRatingDescriptors(ratingDescriptors, pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            gameService.getByGameRatingDescriptors(ratingDescriptors, pageable)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (DataAccessException dae) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get")
     public ResponseEntity<Map<String, ?>> getAllGames(
             Pageable pageable
     ) {
-        return this.gameService.getAll(pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(
+                            this.gameService.getAll(pageable)
+                    ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
 }

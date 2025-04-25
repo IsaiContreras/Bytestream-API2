@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.handlers;
+package com.bytestream_api2.games.handler;
 
-import com.bytestream_api2.games.utilities.ResponseUtility;
+import com.bytestream_api2.games.utilities.BodyFormatter;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -28,7 +28,7 @@ public class ValidatorExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ResponseUtility.error(String.join(" || ", fieldErrors)));
+                .body(BodyFormatter.error(String.join(" || ", fieldErrors)));
     }
 
 }

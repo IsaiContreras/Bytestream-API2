@@ -2,7 +2,7 @@ package com.bytestream_api2.games.utilities;
 
 import java.util.Map;
 
-public class ResponseUtility {
+public class BodyFormatter {
 
     // -- [[ ATTRIBUTES ]] --
 
