@@ -53,16 +53,40 @@ public class MGameRating {
 
         this.gameRatingEntity = gameRating.getGameRatingEntity();
     }
+    public MGameRating(@NotNull String name) {
+        this.name = name;
+    }
     public MGameRating(@NotNull String name, @NotNull String description) {
         this.name = name;
         this.description = description;
     }
+    public MGameRating(@NotNull String name, @NotNull String description, String entityName) {
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            this.gameRatingEntity = new MGameRatingEntity(entityName);
+    }
+    public MGameRating(@NotNull Short id, @NotNull String name, @NotNull String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+    public MGameRating(@NotNull Short id, @NotNull String name, @NotNull String description, String entityName) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            this.gameRatingEntity = new MGameRatingEntity(entityName);
+    }
 
-    public void setName(@NotNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
-    public void setDescription(@NotNull String description) {
+    public void setDescription(String description) {
         this.description = description;
+    }
+    public void setGameRatingEntity(MGameRatingEntity gameRatingEntity) {
+        this.gameRatingEntity = gameRatingEntity;
     }
 
     public void setLogoURI(String logoURI) {

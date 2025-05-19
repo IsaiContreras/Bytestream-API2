@@ -5,6 +5,8 @@ import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
 import com.bytestream_api2.games.service.GameRatingService;
 import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.validation_groups.GameRating.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameRating.OnUpdate;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,7 +31,7 @@ public class GameRatingController {
     // -- PRIVATE --
     @Autowired
     @Qualifier("game_rating_service")
-    private GameRatingService ratingService;
+    private GameRatingService gameRatingService;
 
     // -- PUBLIC --
 
@@ -40,13 +43,13 @@ public class GameRatingController {
     // CUD
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> addNewRating(
-            @Valid @RequestPart("data") GameRating gameRating,
+            @Validated(OnCreate.class) @RequestPart("data") GameRating gameRating,
             @RequestPart("logo") MultipartFile logoImage
     ) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(BodyFormatter.result(
-                            ratingService.create(gameRating, logoImage)
+                            gameRatingService.create(gameRating, logoImage)
                     ));
         } catch (MediaUploadFailedException mufe) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
@@ -59,13 +62,13 @@ public class GameRatingController {
 
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> updateRating(
-            @Valid @RequestPart("data") GameRating gameRating,
-            @RequestPart("logo") MultipartFile logoImage
+            @Validated(OnUpdate.class) @RequestPart("data") GameRating gameRating,
+            @RequestPart(value="logo", required=false) MultipartFile logoImage
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            ratingService.update(gameRating, logoImage)
+                            gameRatingService.update(gameRating, logoImage)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -83,7 +86,7 @@ public class GameRatingController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingService.delete(id);
+            gameRatingService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -97,7 +100,7 @@ public class GameRatingController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingService.hardDelete(id);
+            gameRatingService.hardDelete(id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result("Hard deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
@@ -115,10 +118,10 @@ public class GameRatingController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingService.getByName(name)
+                            this.gameRatingService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -132,10 +135,10 @@ public class GameRatingController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingService.getByGameRatingEntity(name, pageable)
+                            this.gameRatingService.getByGameRatingEntity(name, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         } catch (Exception e) {
@@ -150,10 +153,10 @@ public class GameRatingController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingService.getAll(pageable)
+                            this.gameRatingService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }

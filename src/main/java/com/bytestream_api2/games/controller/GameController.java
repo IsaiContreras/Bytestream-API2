@@ -7,21 +7,25 @@ import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
 import com.bytestream_api2.games.utilities.BodyFormatter;
-import jakarta.validation.Valid;
+import com.bytestream_api2.games.validation_groups.Game.OnCreate;
+import com.bytestream_api2.games.validation_groups.Game.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import com.bytestream_api2.games.entity.Game;
 import com.bytestream_api2.games.service.GameService;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +49,11 @@ public class GameController {
 
     // -- PUBLIC --
     // CUD
-    @PostMapping("/create")
+    @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> addNewGame(
-            @Valid @RequestPart("data") Game game,
-            @RequestPart("cover") MultipartFile coverImage,
-            @RequestPart("landscape") MultipartFile landscapeImage
+            @Validated(OnCreate.class) @RequestPart("data") Game game,
+            @RequestPart(value="cover", required=false) MultipartFile coverImage,
+            @RequestPart(value="landscape", required=false) MultipartFile landscapeImage
     ) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -65,11 +69,11 @@ public class GameController {
         }
     }
 
-    @PatchMapping("/update")
+    @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> updateGame(
-            @Valid @RequestPart("data") Game game,
-            @RequestPart("cover") MultipartFile coverImage,
-            @RequestPart("landscape") MultipartFile landscapeImage
+            @Validated(OnUpdate.class) @RequestPart("data") Game game,
+            @RequestPart(value="cover", required=false) MultipartFile coverImage,
+            @RequestPart(value="landscape", required=false) MultipartFile landscapeImage
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
@@ -127,7 +131,7 @@ public class GameController {
                             this.gameService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -144,7 +148,7 @@ public class GameController {
                             gameService.getByTitle(title, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         } catch (Exception e) {
@@ -154,16 +158,20 @@ public class GameController {
 
     @GetMapping("/get/bycategories")
     public ResponseEntity<Map<String, ?>> getGamesByCategories(
-            @RequestParam("categories") List<GameCategory> categories,
+            @RequestParam("categories") List<String> categories,
             Pageable pageable
     ) {
         try {
+            List<GameCategory> fetchedCategos = new ArrayList<>();
+            for (String category : categories)
+                fetchedCategos.add(new GameCategory(category));
+
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            gameService.getByGameCategories(categories, pageable)
+                            gameService.getByGameCategories(fetchedCategos, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         } catch (Exception e) {
@@ -173,16 +181,20 @@ public class GameController {
 
     @GetMapping("/get/byratings")
     public ResponseEntity<Map<String, ?>> getGamesByRatings(
-            @RequestParam("ratings") List<GameRating> ratings,
+            @RequestParam("ratings") List<String> ratings,
             Pageable pageable
     ) {
         try {
+            List<GameRating> fetchedRatings = new ArrayList<>();
+            for (String rating : ratings)
+                fetchedRatings.add(new GameRating(rating));
+
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            gameService.getByGameRatings(ratings, pageable)
+                            gameService.getByGameRatings(fetchedRatings, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         } catch (Exception e) {
@@ -192,16 +204,20 @@ public class GameController {
 
     @GetMapping("/get/bydescriptors")
     public ResponseEntity<Map<String, ?>> getGamesByDescriptors(
-            @RequestParam("descriptors") List<GameRatingDescriptor> ratingDescriptors,
+            @RequestParam("descriptors") List<String> ratingDescriptors,
             Pageable pageable
     ) {
         try {
+            List<GameRatingDescriptor> fetchedDescriptors = new ArrayList<>();
+            for (String ratingDescriptor : ratingDescriptors)
+                fetchedDescriptors.add(new GameRatingDescriptor(ratingDescriptor));
+
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            gameService.getByGameRatingDescriptors(ratingDescriptors, pageable)
+                            gameService.getByGameRatingDescriptors(fetchedDescriptors, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         } catch (Exception e) {
@@ -219,7 +235,7 @@ public class GameController {
                             this.gameService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }

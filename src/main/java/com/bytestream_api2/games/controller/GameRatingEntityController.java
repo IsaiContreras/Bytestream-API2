@@ -5,7 +5,8 @@ import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
 import com.bytestream_api2.games.service.GameRatingEntityService;
 import com.bytestream_api2.games.utilities.BodyFormatter;
-import jakarta.validation.Valid;
+import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +31,7 @@ public class GameRatingEntityController {
     // Entity Components
     @Autowired
     @Qualifier("game_rating_entity_service")
-    private GameRatingEntityService ratingEntityService;
+    private GameRatingEntityService gameRatingEntityService;
 
     // -- PUBLIC --
 
@@ -41,13 +43,13 @@ public class GameRatingEntityController {
     // CUD
     @PostMapping(value="/create", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> addNewRatingEntity(
-            @Valid @RequestPart("data") GameRatingEntity gameRatingEntity,
-            @RequestPart("logo") MultipartFile logoImage
+            @Validated(OnCreate.class) @RequestPart("data") GameRatingEntity gameRatingEntity,
+            @RequestPart(value="logo", required=false) MultipartFile logoImage
     )  {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(BodyFormatter.result(
-                            ratingEntityService.create(gameRatingEntity, logoImage)
+                            gameRatingEntityService.create(gameRatingEntity, logoImage)
                     ));
         } catch (MediaUploadFailedException mufe) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
@@ -60,13 +62,13 @@ public class GameRatingEntityController {
 
     @PatchMapping(value="/update", consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, ?>> updateRatingEntity (
-            @Valid @RequestPart("data") GameRatingEntity gameRatingEntity,
-            @RequestPart("logo") MultipartFile logoImage
+            @Validated(OnUpdate.class) @RequestPart("data") GameRatingEntity gameRatingEntity,
+            @RequestPart(value="logo", required=false) MultipartFile logoImage
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            ratingEntityService.update(gameRatingEntity, logoImage)
+                            gameRatingEntityService.update(gameRatingEntity, logoImage)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -84,7 +86,7 @@ public class GameRatingEntityController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingEntityService.delete(id);
+            gameRatingEntityService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -98,7 +100,7 @@ public class GameRatingEntityController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingEntityService.hardDelete(id);
+            gameRatingEntityService.hardDelete(id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result("Hard deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
@@ -116,10 +118,10 @@ public class GameRatingEntityController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingEntityService.getByName(name)
+                            this.gameRatingEntityService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -130,10 +132,10 @@ public class GameRatingEntityController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingEntityService.getAll(pageable)
+                            this.gameRatingEntityService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }

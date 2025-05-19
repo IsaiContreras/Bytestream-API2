@@ -81,11 +81,52 @@ public class MGame {
         this.gameRatings = game.getGameRatings();
         this.gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public MGame(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
+    public MGame(Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+             @NotNull Date releaseDate
+    ) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
         this.releaseDate = releaseDate;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate, List<MGameCategory> categories
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        this.gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate, List<MGameCategory> categories, List<MGameRating> ratings
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        this.gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+        this.gameRatings = (ratings != null) ? new ArrayList<>(ratings) : null;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate,
+            List<MGameCategory> categories, List<MGameRating> ratings, List<MGameRatingDescriptor> descriptors
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        this.gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+        this.gameRatings = (ratings != null) ? new ArrayList<>(ratings) : null;
+        this.gameRatingDescriptors = (descriptors != null) ? new ArrayList<>(descriptors) : null;
     }
 
     public void setName(@NotNull String name) {
@@ -106,6 +147,16 @@ public class MGame {
     }
     public void setLandsapeURI(String landsapeURI) {
         this.landsapeURI = landsapeURI;
+    }
+
+    public void setGameCategories(List<MGameCategory> gameCategories) {
+        this.gameCategories = (gameCategories != null) ? new ArrayList<>(gameCategories) : null;
+    }
+    public void setGameRatings(List<MGameRating> gameRatings) {
+        this.gameRatings = (gameRatings != null) ? new ArrayList<>(gameRatings) : null;
+    }
+    public void setGameRatingDescriptors(List<MGameRatingDescriptor> gameRatingDescriptors) {
+        this.gameRatingDescriptors = (gameRatingDescriptors != null) ? new ArrayList<>(gameRatingDescriptors) : null;
     }
 
     public Long getId() {

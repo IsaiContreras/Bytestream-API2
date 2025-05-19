@@ -40,11 +40,21 @@ public class MGameCategory {
         this.updatedAt = gameCategory.getUpdatedAt();
         this.deletedAt = gameCategory.getDeletedAt();
     }
+    public MGameCategory(@NotNull Short id, @NotNull String name) {
+        this.id = id;
+        this.name = name;
+    }
+    public MGameCategory(@NotNull Short id) {
+        this.id = id;
+    }
     public MGameCategory(@NotNull String name) {
         this.name = name;
     }
 
-    public void setName(@NotNull String name) {
+    public void setId(Short id) {
+        this.id = id;
+    }
+    public void setName(String name) {
         this.name = name;
     }
 

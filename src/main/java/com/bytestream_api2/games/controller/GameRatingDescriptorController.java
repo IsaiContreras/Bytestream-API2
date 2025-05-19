@@ -4,7 +4,8 @@ import com.bytestream_api2.games.entity.GameRatingDescriptor;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.service.GameRatingDescriptorService;
 import com.bytestream_api2.games.utilities.BodyFormatter;
-import jakarta.validation.Valid;
+import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -12,6 +13,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -25,7 +27,7 @@ public class GameRatingDescriptorController {
     // -- PRIVATE --
     @Autowired
     @Qualifier("game_rating_descriptor_service")
-    private GameRatingDescriptorService ratingDescriptorService;
+    private GameRatingDescriptorService gameRatingDescriptorService;
 
     // -- PUBLIC --
 
@@ -37,12 +39,12 @@ public class GameRatingDescriptorController {
     // CUD
     @PostMapping("/create")
     public ResponseEntity<Map<String, ?>> addNewRatingDescriptor(
-            @Valid @RequestBody GameRatingDescriptor ratingDescriptor
+            @Validated(OnCreate.class) @RequestBody GameRatingDescriptor ratingDescriptor
     ) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(BodyFormatter.result(
-                            ratingDescriptorService.create(ratingDescriptor)
+                            gameRatingDescriptorService.create(ratingDescriptor)
                     ));
         } catch(DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(dae.getMessage()));
@@ -53,13 +55,15 @@ public class GameRatingDescriptorController {
 
     @PatchMapping("/update")
     public ResponseEntity<Map<String, ?>> updateRatingDescriptor(
-            @Valid @RequestBody GameRatingDescriptor ratingDescriptor
+            @Validated(OnUpdate.class) @RequestBody GameRatingDescriptor ratingDescriptor
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            ratingDescriptorService.update(ratingDescriptor)
+                            gameRatingDescriptorService.update(ratingDescriptor)
                     ));
+        } catch (EntityNotFoundException enfe) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(dae.getMessage()));
         } catch (Exception e) {
@@ -72,7 +76,7 @@ public class GameRatingDescriptorController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingDescriptorService.delete(id);
+            gameRatingDescriptorService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
@@ -86,7 +90,7 @@ public class GameRatingDescriptorController {
             @RequestParam("id") short id
     ) {
         try {
-            ratingDescriptorService.hardDelete(id);
+            gameRatingDescriptorService.hardDelete(id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result("Hard deleted successfully!"));
         } catch (EmptyResultDataAccessException erdae) {
@@ -104,10 +108,10 @@ public class GameRatingDescriptorController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingDescriptorService.getByName(name)
+                            this.gameRatingDescriptorService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -121,10 +125,10 @@ public class GameRatingDescriptorController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingDescriptorService.getByRatingEntity(name, pageable)
+                            this.gameRatingDescriptorService.getByRatingEntity(name, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.result(dae.getMessage()));
         }  catch (Exception e) {
@@ -139,10 +143,10 @@ public class GameRatingDescriptorController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.ratingDescriptorService.getAll(pageable)
+                            this.gameRatingDescriptorService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }

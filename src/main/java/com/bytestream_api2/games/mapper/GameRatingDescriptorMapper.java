@@ -14,8 +14,14 @@ public interface GameRatingDescriptorMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
 
-    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "description", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Named("toNullIfEmpty")
+    static String toNullIfEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? null : value;
+    }
+
+    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "description", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            qualifiedByName="toNullIfEmpty")
     void partialUpdateRatingDescriptor(@MappingTarget GameRatingDescriptor destiny, GameRatingDescriptor source);
 
 }

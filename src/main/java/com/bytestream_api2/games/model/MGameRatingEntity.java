@@ -63,6 +63,18 @@ public class MGameRatingEntity {
         this.location = location;
         this.description = description;
     }
+    public MGameRatingEntity(
+            @NotNull Short id, @NotNull String name, @NotNull String longName, @NotNull String location, @NotNull String description
+    ) {
+        this.id = id;
+        this.name = name;
+        this.longName = longName;
+        this.location = location;
+        this.description = description;
+    }
+    public MGameRatingEntity(@NotNull String name) {
+        this.name = name;
+    }
 
     public void setName(@NotNull String name) {
         this.name = name;

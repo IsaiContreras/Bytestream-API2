@@ -1,6 +1,7 @@
 package com.bytestream_api2.games.model;
 
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
+import com.bytestream_api2.games.entity.GameRatingEntity;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
@@ -52,16 +53,42 @@ public class MGameRatingDescriptor {
 
         this.gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
     }
+    public MGameRatingDescriptor(@NotNull String name) {
+        this.name = name;
+    }
     public MGameRatingDescriptor(@NotNull String name, @NotNull String description) {
         this.name = name;
         this.description = description;
     }
+    public MGameRatingDescriptor(@NotNull String name, @NotNull String description, String entityName) {
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            this.gameRatingEntity = new MGameRatingEntity(entityName);
+    }
+    public MGameRatingDescriptor(@NotNull Short id, @NotNull String name, @NotNull String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+    public MGameRatingDescriptor(
+            @NotNull Short id, @NotNull String name, @NotNull String description, String entityName
+    ) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            this.gameRatingEntity = new MGameRatingEntity(entityName);
+    }
 
-    public void setName(@NotNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
-    public void setDescription(@NotNull String description) {
+    public void setDescription(String description) {
         this.description = description;
+    }
+    public void setGameRatingEntity(MGameRatingEntity gameRatingEntity) {
+        this.gameRatingEntity = gameRatingEntity;
     }
 
     public Short getId() {

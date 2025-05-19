@@ -4,7 +4,8 @@ import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.service.GameCategoryService;
 import com.bytestream_api2.games.utilities.BodyFormatter;
-import jakarta.validation.Valid;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -12,6 +13,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -35,10 +37,11 @@ public class GameCategoryController {
     // -- PRIVATE --
 
     // -- PUBLIC --
+
     // CUD
     @PostMapping("/create")
     public ResponseEntity<Map<String, ?>> addNewGameCategory(
-            @Valid @RequestBody GameCategory gameCategory
+            @Validated(OnCreate.class) @RequestBody GameCategory gameCategory
     ) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -54,7 +57,7 @@ public class GameCategoryController {
 
     @PatchMapping("/update")
     public ResponseEntity<Map<String, ?>> updateGameCategory(
-            @Valid @RequestBody GameCategory gameCategory
+            @Validated(OnUpdate.class) @RequestBody GameCategory gameCategory
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
@@ -107,7 +110,7 @@ public class GameCategoryController {
                             this.gameCategoryService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -123,7 +126,7 @@ public class GameCategoryController {
                             this.gameCategoryService.getByNameContains(name, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -139,7 +142,7 @@ public class GameCategoryController {
                             this.gameCategoryService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result(enfe.getMessage()));
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }

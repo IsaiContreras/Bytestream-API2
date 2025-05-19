@@ -1,5 +1,7 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.validation_groups.GameCategory.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnUpdate;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -24,11 +26,12 @@ public class GameCategory implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
-    @NotBlank(message="Field 'name' is mandatory.")
-    @Size(max=31, message="Field 'name' must be less than 31 characters long.")
+    @NotBlank(message="Field 'name' is mandatory", groups=OnCreate.class)
+    @Size(max=31, message="Field 'name' must be less than 31 characters long.", groups={OnCreate.class, OnUpdate.class})
     @Pattern(
             message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
-            regexp = "^[a-z0-9\\p{Punct}&&[^_]]+(-[a-z0-9\\p{Punct}&&[^_]]+)*$"
+            regexp = "^$|^[a-z0-9\\p{Punct}&&[^_]-]+(-[a-z0-9\\p{Punct}&&[^_]-]+)*$",
+            groups={OnCreate.class, OnUpdate.class}
     )
     private String name;
 
