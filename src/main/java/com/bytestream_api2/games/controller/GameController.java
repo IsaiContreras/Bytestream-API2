@@ -58,7 +58,7 @@ public class GameController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(BodyFormatter.result(
-                            this.gameService.create(game, coverImage, landscapeImage)
+                            gameService.create(game, coverImage, landscapeImage)
                     ));
         } catch (MediaUploadFailedException mufe) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
@@ -78,7 +78,7 @@ public class GameController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameService.update(game, coverImage, landscapeImage)
+                            gameService.update(game, coverImage, landscapeImage)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -128,7 +128,7 @@ public class GameController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameService.getByName(name)
+                            gameService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -232,7 +232,7 @@ public class GameController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameService.getAll(pageable)
+                            gameService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

@@ -1,11 +1,16 @@
 package com.bytestream_api2.games.model;
 
 import com.bytestream_api2.games.entity.GameRatingEntity;
+import com.bytestream_api2.games.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.enums.FilenameFormat;
+import com.bytestream_api2.games.enums.ResourcePath;
+import com.bytestream_api2.games.enums.StaticResourcesPaths;
+import com.bytestream_api2.games.utilities.FilenameFormatter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
-public class MGameRatingEntity {
+public class MGameRatingEntity implements ImageContentEntity {
 
     // -- [[ ATTRIBUTES ]] --
 
@@ -93,34 +98,66 @@ public class MGameRatingEntity {
         this.logoURI = logoURI;
     }
 
+    @Override
+    public void setImageURIsFromFilenames(String[] filenames) {
+        if (filenames.length == 0)
+            return;
+
+        this.setLogoURI(
+                StaticResourcesPaths.GAME_RATING_ENTITY_LOGOS.constructRelativeURI(
+                        new String[]{this.getName(), filenames[0]}
+                )
+        );
+    }
+
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getLongName() {
-        return this.longName;
+        return longName;
     }
     public String getLocation() {
-        return this.location;
+        return location;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public String getLogoURI() {
-        return this.logoURI;
+        return logoURI;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
+    }
+
+    @Override
+    public String getSubDirectory() {
+        return id != null ? id.toString() : null;
+    }
+    @Override
+    public ResourcePath getResourcePath() {
+        return ResourcePath.GAME_RATING_ENTITIES;
+    }
+
+    @Override
+    public String constructFilename(String extension, String[] addit) {
+        return FilenameFormatter.formatFilename(
+                FilenameFormat.ENTITY_FILE_FORMAT,
+                new String[]{
+                        getId().toString().concat(getName()),
+                        extension
+                }
+        );
     }
 
 }

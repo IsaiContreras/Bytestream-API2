@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.misc;
+package com.bytestream_api2.games.enums;
 
 import org.springframework.core.env.Environment;
 
@@ -28,7 +28,7 @@ public enum StaticResourcesPaths {
         this.staticPath = staticPath;
     }
 
-    public String getStaticPath() { return this.staticPath; }
+    public String getStaticPath() { return staticPath; }
 
     public String constructFullURI(Environment environment, String[] inputs) {
         StringBuilder uri;
@@ -37,6 +37,17 @@ public enum StaticResourcesPaths {
                    .concat(Objects.requireNonNull(environment.getProperty("server.port")))
                    .concat(this.getStaticPath()));
         } catch (Exception e) { return null; }
+
+        for (int i = 0; i < inputs.length; i++) {
+            if (i == (inputs.length - 1)) uri.append(inputs[i]);
+            else uri.append(inputs[i]).append("/");
+        }
+
+        return uri.toString();
+    }
+
+    public String constructRelativeURI(String[] inputs) {
+        StringBuilder uri = new StringBuilder(this.getStaticPath());
 
         for (int i = 0; i < inputs.length; i++) {
             if (i == (inputs.length - 1)) uri.append(inputs[i]);

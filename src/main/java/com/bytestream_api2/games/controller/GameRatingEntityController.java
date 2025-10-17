@@ -118,7 +118,7 @@ public class GameRatingEntityController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameRatingEntityService.getByName(name)
+                            gameRatingEntityService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -132,7 +132,7 @@ public class GameRatingEntityController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameRatingEntityService.getAll(pageable)
+                            gameRatingEntityService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

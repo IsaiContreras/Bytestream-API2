@@ -12,7 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-public class ImageResourceUploader {
+public class ImageFileStorer {
 
     // -- [[ ATTRIBUTES ]] --
 
@@ -79,7 +79,7 @@ public class ImageResourceUploader {
 
         String extension = Objects.requireNonNull(multipartFile.getContentType()).split("/")[1];
 
-        return ImageResourceUploader.storeFile(image, destinyPath, filename, extension);
+        return ImageFileStorer.storeFile(image, destinyPath, filename, extension);
     }
 
 }

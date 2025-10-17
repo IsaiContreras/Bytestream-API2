@@ -1,7 +1,9 @@
 package com.bytestream_api2.games.configuration;
 
-import com.bytestream_api2.games.misc.ResourcePath;
+import com.bytestream_api2.games.enums.ResourcePath;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,7 @@ import java.util.Objects;
 public class ResourcePathsConfigurer {
 
     private final Environment environment;
+    private static final Log logger = LogFactory.getLog(ResourcePathsConfigurer.class);
 
     @Autowired
     public ResourcePathsConfigurer(Environment environment) {
@@ -26,7 +29,9 @@ public class ResourcePathsConfigurer {
                         this,
                         Objects.requireNonNull(environment.getProperty(value.getKey()))
                 );
-            } catch (Exception ignored) { } // TODO: LOGGER
+            } catch (Exception e) {
+                logger.error("ResourcePath " + value.getKey() + " couldn't be loaded or does not exists.", e);
+            }
         }
     }
 

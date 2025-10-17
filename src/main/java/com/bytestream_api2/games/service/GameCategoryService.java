@@ -10,6 +10,7 @@ import com.bytestream_api2.games.model.MGameCategory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -25,15 +26,9 @@ public class GameCategoryService {
 
     // -- PRIVATE --
     // Entity Components
-    @Autowired
-    @Qualifier("game_category_repository")
-    private GameCategoryRepository gameCategoryRepository;
-
-    @Autowired
-    @Qualifier("game_category_converter")
-    private GameCategoryConverter gameCategoryConverter;
-
-    private final GameCategoryMapper categoryMapper;
+    private final GameCategoryRepository gameCategoryRepository;
+    private final GameCategoryConverter gameCategoryConverter;
+    private final GameCategoryMapper gameCategoryMapper;
 
     // Class Components
     private static final Log logger = LogFactory.getLog(GameCategoryService.class);
@@ -46,21 +41,27 @@ public class GameCategoryService {
 
     // -- PUBLIC --
     @Autowired
-    public GameCategoryService(GameCategoryMapper categoryMapper) {
-        this.categoryMapper = categoryMapper;
+    public GameCategoryService(
+            @Qualifier("game_category_repository") GameCategoryRepository gameCategoryRepository,
+            @Qualifier("game_category_converter") GameCategoryConverter gameCategoryConverter,
+            GameCategoryMapper categoryMapper
+    ) {
+        this.gameCategoryRepository = gameCategoryRepository;
+        this.gameCategoryConverter = gameCategoryConverter;
+        this.gameCategoryMapper = categoryMapper;
     }
 
     // CUD
-    public MGameCategory create(GameCategory gameCategory) {
+    public MGameCategory create(@NotNull GameCategory gameCategory) {
         return new MGameCategory(gameCategoryRepository.save(gameCategory));
     }
 
-    public MGameCategory update(GameCategory gameCategory) {
+    public MGameCategory update(@NotNull GameCategory gameCategory) {
         GameCategory categoryToUpdate = gameCategoryRepository.findById(gameCategory.getId());
         if (categoryToUpdate == null)
             throw new EntityNotFoundException("Couldn't find a Game category with this ID.");
 
-        categoryMapper.partialUpdateCategory(categoryToUpdate, gameCategory);
+        gameCategoryMapper.partialUpdateCategory(categoryToUpdate, gameCategory);
 
         return new MGameCategory(gameCategoryRepository.save(categoryToUpdate));
     }
@@ -71,7 +72,6 @@ public class GameCategoryService {
             throw new EntityNotFoundException("Couldn't find a Game category with this ID.");
 
         category.setDeletedAt(new Date());
-
         gameCategoryRepository.save(category);
     }
 

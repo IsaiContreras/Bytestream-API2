@@ -18,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyShort;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,21 +60,24 @@ public class GameRatingDescriptorControllerTest {
 
     @BeforeEach
     public void setup() {
-        this.mapper = new ObjectMapper();
+        mapper = new ObjectMapper();
     }
 
     // CUD
     @Test
     public void createValidGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptor = new MGameRatingDescriptor(
                 "mock-descriptor",
                 "Descriptor content mock.",
                 "cero"
         );
 
-        Mockito.when(gameRatingDescriptorService.create(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.create(any(GameRatingDescriptor.class)))
                 .thenReturn(gameRatingDescriptor);
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptor))
@@ -82,61 +88,92 @@ public class GameRatingDescriptorControllerTest {
     }
 
     @Test
-    public void createInvalidGameRatingDescriptorTest() throws Exception {
+    public void createInvalidGameRatingDescriptorNoNameTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptorNoName = new MGameRatingDescriptor(
                 "",
                 "Descriptor content mock.",
                 "cero"
         );
-        MGameRatingDescriptor gameRatingDescriptorNoDescription = new MGameRatingDescriptor(
-                "mock-descriptor",
-                "",
-                "cero"
-        );
-        MGameRatingDescriptor gameRatingDescriptorNoEntity = new MGameRatingDescriptor(
-                "mock-descriptor",
-                "Descriptor content mock.",
-                ""
-        );
-        MGameRatingDescriptor gameRatingDescriptorInvalidEntity = new MGameRatingDescriptor(
-                "mock-descriptor",
-                "Descriptor content mock.",
-                "ce"
-        );
+
+        // Perform and assert
+        mockMvc.perform(post(controllerCreateURI)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(gameRatingDescriptorNoName))
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Field 'name' is mandatory."));
+    }
+
+    @Test
+    public void createInvalidGameRatingDescriptorInvalidNameTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptorInvalidName = new MGameRatingDescriptor(
                 "mock Descriptor",
                 "Descriptor content mock.",
                 ""
         );
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(gameRatingDescriptorNoName))
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Field 'name' is mandatory."));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(gameRatingDescriptorInvalidName))
+                ).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(
+                        "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
+                ));
+    }
 
+    @Test
+    public void createInvalidGameRatingDescriptorNoDescriptionTest() throws Exception {
+        // Preparation
+        MGameRatingDescriptor gameRatingDescriptorNoDescription = new MGameRatingDescriptor(
+                "mock-descriptor",
+                "",
+                "cero"
+        );
+
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptorNoDescription))
         ).andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Field 'description' is mandatory."));
+    }
 
-        mockMvc.perform(post(controllerCreateURI)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(gameRatingDescriptorInvalidName))
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value(
-                "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
-        ));
+    @Test
+    public void createInvalidGameRatingDescriptorNoEntityTest() throws Exception {
+        // Preparation
+        MGameRatingDescriptor gameRatingDescriptorNoEntity = new MGameRatingDescriptor(
+                "mock-descriptor",
+                "Descriptor content mock.",
+                ""
+        );
 
-        Mockito.when(gameRatingDescriptorService.create(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.create(any(GameRatingDescriptor.class)))
                 .thenThrow(new DataAccessException("") {});
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptorNoEntity))
         ).andExpect(status().isBadRequest());
+    }
 
+    @Test
+    public void createInvalidGameRatingDescriptorInvalidEntityTest() throws Exception {
+        // Preparation
+        MGameRatingDescriptor gameRatingDescriptorInvalidEntity = new MGameRatingDescriptor(
+                "mock-descriptor",
+                "Descriptor content mock.",
+                "ce"
+        );
+
+        // Dependency call handlers
+        when(gameRatingDescriptorService.create(any(GameRatingDescriptor.class)))
+                .thenThrow(new DataAccessException("") {});
+
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptorInvalidEntity))
@@ -145,17 +182,18 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void updateValidGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptor = new MGameRatingDescriptor(
                 (short)501,
                 "use-of-alcohol",
                 "Depictions of consumption of alcohol."
         );
 
-        Mockito.when(gameRatingDescriptorService.update(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.update(any(GameRatingDescriptor.class)))
                 .thenReturn(gameRatingDescriptor);
 
-        System.out.println(mapper.writeValueAsString(gameRatingDescriptor));
-
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptor))
@@ -164,12 +202,14 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void updateInvalidGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptorInvalidName = new MGameRatingDescriptor(
                 (short)501,
                 "use of Alcohol",
                 ""
         );
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptorInvalidName))
@@ -181,6 +221,7 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void updateValidGameRatingEntityOfGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptor = new MGameRatingDescriptor(
                 (short)501,
                 "",
@@ -188,9 +229,11 @@ public class GameRatingDescriptorControllerTest {
                 "cero"
         );
 
-        Mockito.when(gameRatingDescriptorService.update(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.update(any(GameRatingDescriptor.class)))
                 .thenReturn(gameRatingDescriptor);
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptor))
@@ -200,6 +243,7 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void updateNonExistentGameRatingEntityOfGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptor = new MGameRatingDescriptor(
                 (short)501,
                 "",
@@ -207,9 +251,11 @@ public class GameRatingDescriptorControllerTest {
                 "ce"
         );
 
-        Mockito.when(gameRatingDescriptorService.update(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.update(any(GameRatingDescriptor.class)))
                 .thenThrow(new DataAccessException("") {});
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptor))
@@ -218,15 +264,18 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void updateNonExistentGameRatingDescriptorTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor gameRatingDescriptor = new MGameRatingDescriptor(
                 (short)501,
                 "use-of-alcohol",
                 "Depictions of consumption of alcohol."
         );
 
-        Mockito.when(gameRatingDescriptorService.update(Mockito.any(GameRatingDescriptor.class)))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.update(any(GameRatingDescriptor.class)))
                 .thenThrow(new EntityNotFoundException("Couldn't find a Rating descriptor with this ID."));
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(gameRatingDescriptor))
@@ -236,8 +285,10 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void deleteValidGameRatingDescriptorTest() throws Exception {
-        Mockito.doNothing().when(gameRatingDescriptorService).delete(Mockito.anyShort());
+        // Dependency call handlers
+        doNothing().when(gameRatingDescriptorService).delete(anyShort());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((short)501))
@@ -247,28 +298,33 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void deleteNonExistentGameRatingDescriptorTest() throws Exception {
-        Mockito.doThrow(new EntityNotFoundException("Couldn't find a Rating descriptor with this ID."))
-                .when(gameRatingDescriptorService).delete(Mockito.anyShort());
+        // Dependency call handlers
+        doThrow(new EntityNotFoundException("Couldn't find a Rating descriptor with this ID."))
+                .when(gameRatingDescriptorService).delete(anyShort());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((short)501))
         ).andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.").value("Couldn't find a Rating descriptor with this ID."));
+        .andExpect(jsonPath("$.error").value("Couldn't find a Rating descriptor with this ID."));
     }
 
     // Queries
     @Test
     public void searchValidGameRatingDescriptorByNameTest() throws Exception {
+        // Preparation
         MGameRatingDescriptor ratingDescriptor = new MGameRatingDescriptor(
                 (short)501,
                 "use-of-alcohol",
                 "Depictions of consumption of alcohol."
         );
 
-        Mockito.when(gameRatingDescriptorService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getByName(anyString()))
                 .thenReturn(ratingDescriptor);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "use-of-alcohol")
@@ -277,9 +333,11 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void searchNonExistentGameRatingDescriptorByNameTest() throws Exception {
-        Mockito.when(gameRatingDescriptorService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getByName(anyString()))
                 .thenThrow(new EntityNotFoundException("Couldn't find a Rating descriptor with this name."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "use-of-alcohol")
@@ -291,6 +349,7 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void searchValidGameRatingDescriptorsByEntityTest() throws Exception {
+        // Preparation
         List<MGameRatingDescriptor> ratingDescriptors = List.of(
                 new MGameRatingDescriptor(
                         (short)501,
@@ -304,10 +363,11 @@ public class GameRatingDescriptorControllerTest {
                 )
         );
 
-        Mockito.when(
-                gameRatingDescriptorService.getByRatingEntity(Mockito.anyString(), Mockito.any(Pageable.class))
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getByRatingEntity(anyString(), any(Pageable.class))
         ).thenReturn(ratingDescriptors);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByEntityURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "cero")
@@ -316,10 +376,11 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void searchNonExistentGameRatingDescriptorsByEntityTest() throws Exception {
-        Mockito.when(
-                gameRatingDescriptorService.getByRatingEntity(Mockito.anyString(), Mockito.any(Pageable.class))
-        ).thenThrow(new EntityNotFoundException("No results for this search."));
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getByRatingEntity(anyString(), any(Pageable.class)))
+            .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByEntityURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "cero")
@@ -328,6 +389,7 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void searchAllGameRatingDescriptorsTest() throws Exception {
+        // Preparation
         List<MGameRatingDescriptor> ratingDescriptors = List.of(
                 new MGameRatingDescriptor(
                         (short)501,
@@ -341,10 +403,11 @@ public class GameRatingDescriptorControllerTest {
                 )
         );
 
-        Mockito.when(
-                gameRatingDescriptorService.getAll(Mockito.any(Pageable.class))
-        ).thenReturn(ratingDescriptors);
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getAll(any(Pageable.class)))
+                .thenReturn(ratingDescriptors);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isOk());
@@ -352,10 +415,11 @@ public class GameRatingDescriptorControllerTest {
 
     @Test
     public void searchEmptyAllGameRatingDescriptorsTest() throws Exception {
-        Mockito.when(
-                gameRatingDescriptorService.getAll(Mockito.any(Pageable.class))
-        ).thenThrow(new EntityNotFoundException("No results for this search."));
+        // Dependency call handlers
+        when(gameRatingDescriptorService.getAll(any(Pageable.class)))
+                .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isNoContent());

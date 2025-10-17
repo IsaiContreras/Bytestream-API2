@@ -97,20 +97,30 @@ public class Game implements Serializable {
     // -- PUBLIC --
     public Game() {}
     public Game(@NotNull Game game) {
-        this.id = game.getId();
-        this.name = game.getName();
-        this.title = game.getTitle();
-        this.synopsis = game.getSynopsis();
-        this.releaseDate = game.getReleaseDate();
-        this.createdAt = game.getCreatedAt();
-        this.updatedAt = game.getUpdatedAt();
-        this.deletedAt = game.getDeletedAt();
+        id = game.getId();
+        name = game.getName();
+        title = game.getTitle();
+        synopsis = game.getSynopsis();
+        releaseDate = game.getReleaseDate();
+        createdAt = game.getCreatedAt();
+        updatedAt = game.getUpdatedAt();
+        deletedAt = game.getDeletedAt();
 
-        this.gameCategories = game.getGameCategories();
-        this.gameRatings = game.getGameRatings();
-        this.gameRatingDescriptors = game.getGameRatingDescriptors();
+        gameCategories = game.getGameCategories();
+        gameRatings = game.getGameRatings();
+        gameRatingDescriptors = game.getGameRatingDescriptors();
     }
     public Game(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+    }
+    public Game(
+            @NotNull Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate
+    ) {
+        this.id = id;
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
@@ -145,39 +155,39 @@ public class Game implements Serializable {
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getTitle() {
-        return this.title;
+        return title;
     }
     public String getSynopsis() {
-        return this.synopsis;
+        return synopsis;
     }
     public Date getReleaseDate() {
         return releaseDate;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public List<GameCategory> getGameCategories() {
-        return (this.gameCategories == null) ? null : new ArrayList<>(this.gameCategories);
+        return (gameCategories == null) ? null : new ArrayList<>(gameCategories);
     }
     public List<GameRating> getGameRatings() {
-        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
+        return (gameRatings == null) ? null : new ArrayList<>(gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
+        return (gameRatingDescriptors == null) ? null : new ArrayList<>(gameRatingDescriptors);
     }
 
 }

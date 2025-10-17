@@ -46,7 +46,7 @@ public class GameCategoryController {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(BodyFormatter.result(
-                            this.gameCategoryService.create(gameCategory)
+                            gameCategoryService.create(gameCategory)
                     ));
         } catch (DataAccessException dae) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(dae.getMessage()));
@@ -62,7 +62,7 @@ public class GameCategoryController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameCategoryService.update(gameCategory)
+                            gameCategoryService.update(gameCategory)
                     ));
         } catch (EntityNotFoundException | DataAccessException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
@@ -76,7 +76,7 @@ public class GameCategoryController {
             @RequestParam("id") short id
     ) {
         try {
-            this.gameCategoryService.delete(id);
+            gameCategoryService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
@@ -107,7 +107,7 @@ public class GameCategoryController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameCategoryService.getByName(name)
+                            gameCategoryService.getByName(name)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
@@ -123,7 +123,7 @@ public class GameCategoryController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameCategoryService.getByNameContains(name, pageable)
+                            gameCategoryService.getByNameContains(name, pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -139,7 +139,7 @@ public class GameCategoryController {
         try {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result(
-                            this.gameCategoryService.getAll(pageable)
+                            gameCategoryService.getAll(pageable)
                     ));
         } catch (EntityNotFoundException enfe) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

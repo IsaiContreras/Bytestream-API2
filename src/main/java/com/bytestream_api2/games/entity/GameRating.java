@@ -66,14 +66,14 @@ public class GameRating implements Serializable {
     // -- PUBLIC --
     public GameRating() {}
     public GameRating(@NotNull GameRating gameRating) {
-        this.id = gameRating.getId();
-        this.name = gameRating.getName();
-        this.description = gameRating.getDescription();
-        this.createdAt = gameRating.getCreatedAt();
-        this.updatedAt = gameRating.getUpdatedAt();
-        this.deletedAt = gameRating.getDeletedAt();
+        id = gameRating.getId();
+        name = gameRating.getName();
+        description = gameRating.getDescription();
+        createdAt = gameRating.getCreatedAt();
+        updatedAt = gameRating.getUpdatedAt();
+        deletedAt = gameRating.getDeletedAt();
 
-        this.gameRatingEntity = gameRating.getGameRatingEntity();
+        gameRatingEntity = gameRating.getGameRatingEntity();
     }
     public GameRating(@NotNull String name) {
         this.name = name;
@@ -81,6 +81,24 @@ public class GameRating implements Serializable {
     public GameRating(@NotNull String name, @NotNull String description) {
         this.name = name;
         this.description = description;
+    }
+    public GameRating(@NotNull String name, @NotNull String description, String entityName) {
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
+    }
+    public GameRating(@NotNull Short id, @NotNull String name, @NotNull String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
+    public GameRating(@NotNull Short id, @NotNull String name, @NotNull String description, String entityName) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
     }
 
     public void setName(String name) {
@@ -98,27 +116,27 @@ public class GameRating implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public GameRatingEntity getGameRatingEntity() {
-        return this.gameRatingEntity;
+        return gameRatingEntity;
     }
 
 }

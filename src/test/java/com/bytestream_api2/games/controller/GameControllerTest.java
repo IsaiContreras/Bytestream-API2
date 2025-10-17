@@ -23,12 +23,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -74,13 +74,14 @@ public class GameControllerTest {
 
     @BeforeEach
     public void setup() {
-        this.mapper = new ObjectMapper();
-        this.formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        mapper = new ObjectMapper();
+        formatter = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
     }
 
     // CUD
     @Test
     public void createValidGameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 null,
                 "metroid-dread",
@@ -89,14 +90,6 @@ public class GameControllerTest {
                 formatter.parse("2021-10-08")
         );
 
-        Mockito.when(
-                gameService.create(
-                        Mockito.any(Game.class),
-                        Mockito.nullable(MultipartFile.class),
-                        Mockito.nullable(MultipartFile.class)
-                )
-        ).thenReturn(game);
-
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
                 "",
@@ -104,6 +97,14 @@ public class GameControllerTest {
                 mapper.writeValueAsBytes(game)
         );
 
+        // Dependency call handlers
+        when(gameService.create(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
+        )).thenReturn(game);
+
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
                 .file(dataPart)
         ).andExpect(status().isCreated())
@@ -113,7 +114,8 @@ public class GameControllerTest {
     }
 
     @Test
-    public void createInvalidGameTest() throws Exception {
+    public void createInvalidGameNoNameTest() throws Exception {
+        // Preparation
         MockMultipartFile gameNoName = new MockMultipartFile(
                 "data",
                 "",
@@ -126,6 +128,17 @@ public class GameControllerTest {
                         formatter.parse("2021-10-08")
                 ))
         );
+
+        // Perform and assert
+        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
+                .file(gameNoName)
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Field 'name' is mandatory."));
+    }
+
+    @Test
+    public void createInvalidGameInvalidNameTest() throws Exception {
+        // Preparation
         MockMultipartFile gameInvalidName = new MockMultipartFile(
                 "data",
                 "",
@@ -138,6 +151,19 @@ public class GameControllerTest {
                         formatter.parse("2021-10-08")
                 ))
         );
+
+        // Perform and assert
+        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
+                .file(gameInvalidName)
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value(
+                "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
+        ));
+    }
+
+    @Test
+    public void createInvalidGameNoTitleTest() throws Exception {
+        // Preparation
         MockMultipartFile gameNoTitle = new MockMultipartFile(
                 "data",
                 "",
@@ -150,6 +176,17 @@ public class GameControllerTest {
                         formatter.parse("2021-10-08")
                 ))
         );
+
+        // Perform and assert
+        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
+                .file(gameNoTitle)
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Field 'title' is mandatory."));
+    }
+
+    @Test
+    public void createInvalidGameNoDescriptionTest() throws Exception {
+        // Preparation
         MockMultipartFile gameNoDescription = new MockMultipartFile(
                 "data",
                 "",
@@ -162,6 +199,17 @@ public class GameControllerTest {
                         formatter.parse("2021-10-08")
                 ))
         );
+
+        // Perform and assert
+        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
+                .file(gameNoDescription)
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Field 'synopsis' is mandatory."));
+    }
+
+    @Test
+    public void createInvalidGameNoReleaseDateTest() throws Exception {
+        // Preparation
         MockMultipartFile gameNoReleaseDate = new MockMultipartFile(
                 "data",
                 "",
@@ -173,6 +221,17 @@ public class GameControllerTest {
                         "Mocking description text field."
                 ))
         );
+
+        // Perform and assert
+        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
+                .file(gameNoReleaseDate)
+        ).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Field 'releaseDate' is mandatory."));
+    }
+
+    @Test
+    public void createInvalidGameNoCategoriesTest() throws Exception {
+        // Preparation
         MockMultipartFile game = new MockMultipartFile(
                 "data",
                 "",
@@ -186,52 +245,46 @@ public class GameControllerTest {
                 ))
         );
 
-        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                .file(gameNoName)
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Field 'name' is mandatory."));
-
-        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                .file(gameInvalidName)
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value(
-                "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
-        ));
-
-        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                .file(gameNoTitle)
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Field 'title' is mandatory."));
-
-        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                .file(gameNoDescription)
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Field 'synopsis' is mandatory."));
-
-        mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                .file(gameNoReleaseDate)
-        ).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("Field 'releaseDate' is mandatory."));
-
-        Mockito.when(gameService.create(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.create(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new InvalidEntityRelationsException("Game must have at least one related category."));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
                 .file(game)
         ).andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Game must have at least one related category."));
+    }
 
-        Mockito.when(gameService.create(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+    @Test
+    public void createInvalidGameMoreThanOneGameRatingFromARatingEntityTest() throws Exception {
+        // Preparation
+        MockMultipartFile game = new MockMultipartFile(
+                "data",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                mapper.writeValueAsBytes(new MGame(
+                        null,
+                        "metroid-dread",
+                        "Metroid Dread",
+                        "Mocking description text field.",
+                        formatter.parse("2021-10-08")
+                ))
+        );
+
+        // Dependency call handlers
+        when(gameService.create(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new InvalidEntityRelationsException(
                 "Game must be related to only one rating from a rating entity."
         ));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
                         .file(game)
         ).andExpect(status().isBadRequest())
@@ -242,6 +295,7 @@ public class GameControllerTest {
 
     @Test
     public void createMediaErrorGameTest() throws Exception {
+        // Preparation
         MockMultipartFile game = new MockMultipartFile(
                 "data",
                 "",
@@ -255,14 +309,16 @@ public class GameControllerTest {
                 ))
         );
 
-        Mockito.when(gameService.create(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.create(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded."));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.POST, controllerCreateURI)
-                        .file(game)
+                .file(game)
         ).andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.error").value(
                 "Either Cover image or landscape image couldn't be uploaded."
@@ -271,6 +327,7 @@ public class GameControllerTest {
 
     @Test
     public void updateValidGameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 (long)1001,
                 "metroid-5",
@@ -279,14 +336,6 @@ public class GameControllerTest {
                 formatter.parse("2021-10-08")
         );
 
-        Mockito.when(
-                gameService.update(
-                        Mockito.any(Game.class),
-                        Mockito.nullable(MultipartFile.class),
-                        Mockito.nullable(MultipartFile.class)
-                )
-        ).thenReturn(game);
-
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
                 "",
@@ -294,6 +343,14 @@ public class GameControllerTest {
                 mapper.writeValueAsBytes(game)
         );
 
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
+        )).thenReturn(game);
+
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isOk())
@@ -302,7 +359,8 @@ public class GameControllerTest {
     }
 
     @Test
-    public void updateInvalidGameTest() throws Exception {
+    public void updateInvalidGameInvalidNameTest() throws Exception {
+        // Preparation
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
                 "",
@@ -316,16 +374,18 @@ public class GameControllerTest {
                 ))
         );
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value(
                 "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
         ));
-}
+    }
 
     @Test
     public void updateValidGameCategoriesOfGameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 (long)1001,
                 "metroid-5",
@@ -345,12 +405,14 @@ public class GameControllerTest {
                 mapper.writeValueAsBytes(game)
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenReturn(game);
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isOk())
@@ -360,6 +422,7 @@ public class GameControllerTest {
 
     @Test
     public void updateInvalidGameCategoriesOfGameTest() throws Exception {
+        // Preparation
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
                 "",
@@ -374,12 +437,14 @@ public class GameControllerTest {
                 ))
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new InvalidEntityRelationsException("Game must have at least one related category."));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isBadRequest())
@@ -388,6 +453,7 @@ public class GameControllerTest {
 
     @Test
     public void updateValidGameRatingsOfGameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 (long)1001,
                 "metroid-5",
@@ -408,12 +474,14 @@ public class GameControllerTest {
                 mapper.writeValueAsBytes(game)
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenReturn(game);
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isOk())
@@ -423,6 +491,7 @@ public class GameControllerTest {
 
     @Test
     public void updateInvalidGameRatingsOfGameTest() throws Exception {
+        // Preparation
         MockMultipartFile dataPart = new MockMultipartFile(
                 "data",
                 "",
@@ -441,14 +510,16 @@ public class GameControllerTest {
                 ))
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new InvalidEntityRelationsException(
                 "Game must be related to only one rating from a rating entity."
         ));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isBadRequest())
@@ -459,6 +530,7 @@ public class GameControllerTest {
 
     @Test
     public void updateValidGameRatingDescriptorsOfGameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 (long)1001,
                 "metroid-5",
@@ -480,12 +552,14 @@ public class GameControllerTest {
                 mapper.writeValueAsBytes(game)
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenReturn(game);
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(dataPart)
         ).andExpect(status().isOk())
@@ -496,6 +570,7 @@ public class GameControllerTest {
 
     @Test
     public void updateNonExistentGameTest() throws Exception {
+        // Preparation
         MockMultipartFile game = new MockMultipartFile(
                 "data",
                 "",
@@ -509,12 +584,14 @@ public class GameControllerTest {
                 ))
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new EntityNotFoundException("Couldn't find a Game with this ID."));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(game)
         ).andExpect(status().isNotFound())
@@ -523,6 +600,7 @@ public class GameControllerTest {
 
     @Test
     public void updateMediaErrorGameTest() throws Exception {
+        // Preparation
         MockMultipartFile game = new MockMultipartFile(
                 "data",
                 "",
@@ -536,12 +614,14 @@ public class GameControllerTest {
                 ))
         );
 
-        Mockito.when(gameService.update(
-                Mockito.any(Game.class),
-                Mockito.nullable(MultipartFile.class),
-                Mockito.nullable(MultipartFile.class)
+        // Dependency call handlers
+        when(gameService.update(
+                any(Game.class),
+                nullable(MultipartFile.class),
+                nullable(MultipartFile.class)
         )).thenThrow(new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded."));
 
+        // Perform and assert
         mockMvc.perform(multipart(HttpMethod.PATCH, controllerUpdateURI)
                 .file(game)
         ).andExpect(status().isUnprocessableEntity())
@@ -552,8 +632,10 @@ public class GameControllerTest {
 
     @Test
     public void deleteValidGameTest() throws Exception {
-        Mockito.doNothing().when(gameService).delete(Mockito.anyLong());
+        // Dependency call handlers
+        doNothing().when(gameService).delete(anyLong());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((long)1001))
@@ -563,9 +645,11 @@ public class GameControllerTest {
 
     @Test
     public void deleteNonExistentGameTest() throws Exception {
-        Mockito.doThrow(new EntityNotFoundException("Couldn't find a Game with this ID."))
-                .when(gameService).delete(Mockito.anyLong());
+        // Dependency call handlers
+        doThrow(new EntityNotFoundException("Couldn't find a Game with this ID."))
+                .when(gameService).delete(anyLong());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((long)1016))
@@ -576,6 +660,7 @@ public class GameControllerTest {
     // Queries
     @Test
     public void searchValidGameByNameTest() throws Exception {
+        // Preparation
         MGame game = new MGame(
                 (long)1001,
                 "metroid-dread",
@@ -584,11 +669,11 @@ public class GameControllerTest {
                 formatter.parse("2021-10-08")
         );
 
-        System.out.println(game.getReleaseDate());
-
-        Mockito.when(gameService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameService.getByName(Mockito.anyString()))
                 .thenReturn(game);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "metroid-dread")
@@ -600,9 +685,11 @@ public class GameControllerTest {
 
     @Test
     public void searchNonExistentGameByNameTest() throws Exception {
-        Mockito.when(gameService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameService.getByName(Mockito.anyString()))
                 .thenThrow(new EntityNotFoundException("Couldn't find a Game with this name."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "metroid-dread")
@@ -612,6 +699,7 @@ public class GameControllerTest {
 
     @Test
     public void searchValidGamesByTitleTest() throws Exception {
+        // Preparation
         List<MGame> games = List.of(
             new MGame(
                     (long)1002,
@@ -629,9 +717,11 @@ public class GameControllerTest {
             )
         );
 
-        Mockito.when(gameService.getByTitle(Mockito.anyString(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByTitle(Mockito.anyString(), any(Pageable.class)))
             .thenReturn(games);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByTitleURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("title", "S")
@@ -642,9 +732,11 @@ public class GameControllerTest {
 
     @Test
     public void searchNonExistentGamesByTitleTest() throws Exception {
-        Mockito.when(gameService.getByTitle(Mockito.anyString(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByTitle(Mockito.anyString(), any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByTitleURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("title", "L")
@@ -653,6 +745,7 @@ public class GameControllerTest {
 
     @Test
     public void searchValidGamesByCategoriesTest() throws Exception {
+        // Preparation
         List<MGame> games = List.of(
             new MGame(
                     (long)1020,
@@ -670,9 +763,11 @@ public class GameControllerTest {
             )
         );
 
-        Mockito.when(gameService.getByGameCategories(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameCategories(Mockito.anyList(), any(Pageable.class)))
                 .thenReturn(games);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByCategoriesURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -689,14 +784,11 @@ public class GameControllerTest {
 
     @Test
     public void searchNonExistentGamesByCategoriesTest() throws Exception {
-        System.out.println(mapper.writeValueAsString(List.of(
-                new MGameCategory("survival-horror"),
-                new MGameCategory("shooter")
-        )));
-
-        Mockito.when(gameService.getByGameCategories(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameCategories(Mockito.anyList(), any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByCategoriesURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -711,6 +803,7 @@ public class GameControllerTest {
 
     @Test
     public void searchValidGamesByRatingsTest() throws Exception {
+        // Preparation
         List<MGame> games = List.of(
                 new MGame(
                         (long)1022,
@@ -728,9 +821,11 @@ public class GameControllerTest {
                 )
         );
 
-        Mockito.when(gameService.getByGameRatings(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameRatings(Mockito.anyList(), any(Pageable.class)))
                 .thenReturn(games);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByRatingsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -747,9 +842,11 @@ public class GameControllerTest {
 
     @Test
     public void searchNonExistentGamesByRatingsTest() throws Exception {
-        Mockito.when(gameService.getByGameRatings(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameRatings(Mockito.anyList(), any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByRatingsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -764,6 +861,7 @@ public class GameControllerTest {
 
     @Test
     public void searchValidGamesByDescriptorsTest() throws Exception {
+        // Preparation
         List<MGame> games = List.of(
                 new MGame(
                         (long)1025,
@@ -781,9 +879,11 @@ public class GameControllerTest {
                 )
         );
 
-        Mockito.when(gameService.getByGameRatingDescriptors(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameRatingDescriptors(Mockito.anyList(), any(Pageable.class)))
                 .thenReturn(games);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByDescriptorsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -800,9 +900,11 @@ public class GameControllerTest {
 
     @Test
     public void searchNonExistentGamesByDescriptorsTest() throws Exception {
-        Mockito.when(gameService.getByGameRatingDescriptors(Mockito.anyList(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getByGameRatingDescriptors(Mockito.anyList(), any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByDescriptorsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param(
@@ -817,6 +919,7 @@ public class GameControllerTest {
 
     @Test
     public void searchAllGamesTest() throws Exception {
+        // Preparation
         List<MGame> games = List.of(
                 new MGame(
                         (long)1001,
@@ -883,9 +986,11 @@ public class GameControllerTest {
                 )
         );
 
-        Mockito.when(gameService.getAll(Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getAll(any(Pageable.class)))
                 .thenReturn(games);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result[0].name").value("metroid-dread"))
@@ -901,9 +1006,11 @@ public class GameControllerTest {
 
     @Test
     public void searchEmptyAllGamesTest() throws Exception {
-        Mockito.when(gameService.getAll(Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameService.getAll(any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI))
                 .andExpect(status().isNoContent());
     }

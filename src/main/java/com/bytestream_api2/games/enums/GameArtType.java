@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.misc;
+package com.bytestream_api2.games.enums;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +25,7 @@ public enum GameArtType {
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
 }

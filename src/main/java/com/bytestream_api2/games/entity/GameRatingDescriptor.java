@@ -1,5 +1,6 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.model.MGameRatingEntity;
 import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnCreate;
 import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnUpdate;
 import jakarta.persistence.*;
@@ -66,14 +67,18 @@ public class GameRatingDescriptor implements Serializable {
     // -- PUBLIC --
     public GameRatingDescriptor() {}
     public GameRatingDescriptor(@NotNull GameRatingDescriptor gameRatingDescriptor) {
-        this.id = gameRatingDescriptor.getId();
-        this.name = gameRatingDescriptor.getName();
-        this.description = gameRatingDescriptor.getDescription();
-        this.createdAt = gameRatingDescriptor.getCreatedAt();
-        this.updatedAt = gameRatingDescriptor.getUpdatedAt();
-        this.deletedAt = gameRatingDescriptor.getDeletedAt();
+        id = gameRatingDescriptor.getId();
+        name = gameRatingDescriptor.getName();
+        description = gameRatingDescriptor.getDescription();
+        createdAt = gameRatingDescriptor.getCreatedAt();
+        updatedAt = gameRatingDescriptor.getUpdatedAt();
+        deletedAt = gameRatingDescriptor.getDeletedAt();
 
-        this.gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
+        gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
+    }
+    public GameRatingDescriptor(@NotNull Short id, @NotNull String name) {
+        this.id = id;
+        this.name = name;
     }
     public GameRatingDescriptor(@NotNull String name) {
         this.name = name;
@@ -82,7 +87,21 @@ public class GameRatingDescriptor implements Serializable {
         this.name = name;
         this.description = description;
     }
-
+    public GameRatingDescriptor(
+            @NotNull Short id, @NotNull String name, @NotNull String description, String entityName
+    ) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
+    }
+    public GameRatingDescriptor(@NotNull String name, @NotNull String description, String entityName) {
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -99,27 +118,27 @@ public class GameRatingDescriptor implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public GameRatingEntity getGameRatingEntity() {
-        return this.gameRatingEntity;
+        return gameRatingEntity;
     }
 
 }

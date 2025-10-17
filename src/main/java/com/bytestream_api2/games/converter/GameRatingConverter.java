@@ -1,7 +1,9 @@
 package com.bytestream_api2.games.converter;
 
 import com.bytestream_api2.games.entity.GameRating;
+import com.bytestream_api2.games.interfaces.ImageContentEntity;
 import com.bytestream_api2.games.model.MGameRating;
+import com.bytestream_api2.games.model.MGameRatingEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -26,6 +28,24 @@ public class GameRatingConverter {
 
         for (GameRating ratingItem : ratings)
             result.add(new MGameRating(ratingItem, true));
+
+        return result;
+    }
+
+    public List<MGameRating> parseICEToEntity(List<ImageContentEntity> imageContentEntities) {
+        List<MGameRating> result = new ArrayList<>();
+
+        for (ImageContentEntity itemEntity : imageContentEntities)
+            result.add((MGameRating)itemEntity);
+
+        return result;
+    }
+
+    public List<ImageContentEntity> parseEntityToICE(List<MGameRating> gameRatings) {
+        List<ImageContentEntity> result = new ArrayList<>();
+
+        for (MGameRating itemGameRatingEntity : gameRatings)
+            result.add((ImageContentEntity)itemGameRatingEntity);
 
         return result;
     }

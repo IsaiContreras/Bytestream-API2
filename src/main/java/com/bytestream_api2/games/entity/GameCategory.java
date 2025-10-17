@@ -55,13 +55,17 @@ public class GameCategory implements Serializable {
     // -- PUBLIC --
     public GameCategory() {}
     public GameCategory(@NotNull GameCategory gameCategory) {
-        this.id = gameCategory.getId();
-        this.name = gameCategory.getName();
-        this.createdAt = gameCategory.getCreatedAt();
-        this.updatedAt = gameCategory.getUpdatedAt();
-        this.deletedAt = gameCategory.getDeletedAt();
+        id = gameCategory.getId();
+        name = gameCategory.getName();
+        createdAt = gameCategory.getCreatedAt();
+        updatedAt = gameCategory.getUpdatedAt();
+        deletedAt = gameCategory.getDeletedAt();
     }
     public GameCategory(@NotNull String name) {
+        this.name = name;
+    }
+    public GameCategory(@NotNull Short id, @NotNull String name) {
+        this.id = id;
         this.name = name;
     }
 
@@ -74,20 +78,20 @@ public class GameCategory implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
 }

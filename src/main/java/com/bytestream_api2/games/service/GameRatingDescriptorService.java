@@ -11,6 +11,7 @@ import com.bytestream_api2.games.model.MGameRatingDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
@@ -26,19 +27,10 @@ public class GameRatingDescriptorService {
 
     // -- PRIVATE --
     // Entity Components
-    @Autowired
-    @Qualifier("game_rating_descriptor_repository")
-    private GameRatingDescriptorRepository ratingDescriptorRepository;
-
-    @Autowired
-    @Qualifier("game_rating_entity_repository")
-    private GameRatingEntityRepository ratingEntityRepository;
-
-    @Autowired
-    @Qualifier("game_rating_descriptor_converter")
-    private GameRatingDescriptorConverter ratingDescriptorConverter;
-
-    private final GameRatingDescriptorMapper ratingDescriptorMapper;
+    private final GameRatingDescriptorRepository gameRatingDescriptorRepository;
+    private final GameRatingEntityRepository gameRatingEntityRepository;
+    private final GameRatingDescriptorConverter gameRatingDescriptorConverter;
+    private final GameRatingDescriptorMapper gameRatingDescriptorMapper;
 
     // Class Components
     private static final Log logger = LogFactory.getLog(GameRatingDescriptorService.class);
@@ -51,54 +43,60 @@ public class GameRatingDescriptorService {
 
     // -- PUBLIC --
     @Autowired
-    public GameRatingDescriptorService(GameRatingDescriptorMapper gameRatingDescriptorMapper) {
-        this.ratingDescriptorMapper = gameRatingDescriptorMapper;
+    public GameRatingDescriptorService(
+            @Qualifier("game_rating_descriptor_repository") GameRatingDescriptorRepository gameRatingDescriptorRepository,
+            @Qualifier("game_rating_entity_repository") GameRatingEntityRepository gameRatingEntityRepository,
+            @Qualifier("game_rating_descriptor_converter") GameRatingDescriptorConverter gameRatingDescriptorConverter,
+            GameRatingDescriptorMapper gameRatingDescriptorMapper
+    ) {
+        this.gameRatingDescriptorRepository = gameRatingDescriptorRepository;
+        this.gameRatingEntityRepository = gameRatingEntityRepository;
+        this.gameRatingDescriptorConverter = gameRatingDescriptorConverter;
+        this.gameRatingDescriptorMapper = gameRatingDescriptorMapper;
     }
 
     // CUD
-    public MGameRatingDescriptor create(GameRatingDescriptor ratingDescriptor) {
+    public MGameRatingDescriptor create(@NotNull GameRatingDescriptor ratingDescriptor) {
         ratingDescriptor.setGameRatingEntity(
-                ratingEntityRepository.findByName(
+                gameRatingEntityRepository.findByName(
                         ratingDescriptor.getGameRatingEntity() != null ?
                                 ratingDescriptor.getGameRatingEntity().getName() : null
                 )
         );
 
-        return new MGameRatingDescriptor(this.ratingDescriptorRepository.save(ratingDescriptor), true);
+        return new MGameRatingDescriptor(gameRatingDescriptorRepository.save(ratingDescriptor), true);
     }
 
-    public MGameRatingDescriptor update(GameRatingDescriptor ratingDescriptor) {
-        GameRatingDescriptor descriptorToUpdate = ratingDescriptorRepository.findById(ratingDescriptor.getId());
+    public MGameRatingDescriptor update(@NotNull GameRatingDescriptor ratingDescriptor) {
+        GameRatingDescriptor descriptorToUpdate = gameRatingDescriptorRepository.findById(ratingDescriptor.getId());
         if (descriptorToUpdate == null)
             throw new EntityNotFoundException("Couldn't find a Rating descriptor with this ID.");
 
         if (ratingDescriptor.getGameRatingEntity() != null)
             ratingDescriptor.setGameRatingEntity(
-                    ratingEntityRepository.findByName(ratingDescriptor.getGameRatingEntity().getName())
+                    gameRatingEntityRepository.findByName(ratingDescriptor.getGameRatingEntity().getName())
             );
 
-        ratingDescriptorMapper.partialUpdateRatingDescriptor(descriptorToUpdate, ratingDescriptor);
-
-        return new MGameRatingDescriptor(this.ratingDescriptorRepository.save(descriptorToUpdate), true);
+        gameRatingDescriptorMapper.partialUpdateRatingDescriptor(descriptorToUpdate, ratingDescriptor);
+        return new MGameRatingDescriptor(gameRatingDescriptorRepository.save(descriptorToUpdate), true);
     }
 
     public void delete(short id) {
-        GameRatingDescriptor ratingDescriptor = ratingDescriptorRepository.findById(id);
+        GameRatingDescriptor ratingDescriptor = gameRatingDescriptorRepository.findById(id);
         if (ratingDescriptor == null || ratingDescriptor.getDeletedAt() != null)
             throw new EntityNotFoundException("Couldn't find a Rating descriptor with this ID.");
 
         ratingDescriptor.setDeletedAt(new Date());
-
-        ratingDescriptorRepository.save(ratingDescriptor);
+        gameRatingDescriptorRepository.save(ratingDescriptor);
     }
 
     public void hardDelete(short id) {
-        ratingDescriptorRepository.delete(ratingDescriptorRepository.findById(id));
+        gameRatingDescriptorRepository.delete(gameRatingDescriptorRepository.findById(id));
     }
 
     // Queries
     public MGameRatingDescriptor getByName(String name) {
-        GameRatingDescriptor ratingDescriptor = ratingDescriptorRepository.findByName(name);
+        GameRatingDescriptor ratingDescriptor = gameRatingDescriptorRepository.findByName(name);
         if (ratingDescriptor == null || ratingDescriptor.getDeletedAt() != null)
             throw new EntityNotFoundException("Couldn't find a Rating descriptor with this name.");
 
@@ -106,9 +104,9 @@ public class GameRatingDescriptorService {
     }
 
     public List<MGameRatingDescriptor> getByRatingEntity(String name, Pageable pageable) {
-        List<MGameRatingDescriptor> results = ratingDescriptorConverter
-                .parseToList(ratingDescriptorRepository.findByGameRatingEntity(
-                        ratingEntityRepository.findByName(name), pageable
+        List<MGameRatingDescriptor> results = gameRatingDescriptorConverter
+                .parseToList(gameRatingDescriptorRepository.findByGameRatingEntity(
+                        gameRatingEntityRepository.findByName(name), pageable
                 ).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
@@ -118,8 +116,8 @@ public class GameRatingDescriptorService {
     }
 
     public List<MGameRatingDescriptor> getAll(Pageable pageable) {
-        List<MGameRatingDescriptor> results = ratingDescriptorConverter.parseToList(
-                ratingDescriptorRepository.findAll(pageable).getContent()
+        List<MGameRatingDescriptor> results = gameRatingDescriptorConverter.parseToList(
+                gameRatingDescriptorRepository.findAll(pageable).getContent()
         ).stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");

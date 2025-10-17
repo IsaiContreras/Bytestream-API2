@@ -17,6 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyShort;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -55,17 +58,20 @@ public class GameCategoryControllerTest {
 
     @BeforeEach
     public void setup() {
-        this.mapper = new ObjectMapper();
+        mapper = new ObjectMapper();
     }
 
     // CUD
     @Test
     public void createValidCategoryTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory("mock-category");
 
-        Mockito.when(this.gameCategoryService.create(Mockito.any(GameCategory.class)))
+        // Dependency call handlers
+        when(gameCategoryService.create(any(GameCategory.class)))
                 .thenReturn(category);
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(category))
@@ -75,8 +81,10 @@ public class GameCategoryControllerTest {
 
     @Test
     public void createInvalidCategoryTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory("mock Category");
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(category))
@@ -88,12 +96,14 @@ public class GameCategoryControllerTest {
 
     @Test
     public void createEmptyNameCategoryTest() throws Exception {
-        MGameCategory categoryEmtpyString = new MGameCategory("");
+        // Preparation
+        MGameCategory categoryEmptyString = new MGameCategory("");
         MGameCategory categoryNullString = new MGameCategory();
 
+        // Perform and assert
         mockMvc.perform(post(controllerCreateURI)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(mapper.writeValueAsString(categoryEmtpyString))
+                .content(mapper.writeValueAsString(categoryEmptyString))
         ).andDo(handler -> System.out.println(content()))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("Field 'name' is mandatory"));
@@ -108,11 +118,14 @@ public class GameCategoryControllerTest {
 
     @Test
     public void updateValidCategoryTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory((short)501, "simulated-mock");
 
-        Mockito.when(this.gameCategoryService.update(Mockito.any(GameCategory.class)))
+        // Dependency call handlers
+        when(gameCategoryService.update(any(GameCategory.class)))
                 .thenReturn(category);
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(category))
@@ -123,28 +136,33 @@ public class GameCategoryControllerTest {
 
     @Test
     public void updateInvalidCategoryTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory(
                 (short)500,
                 "simulated Mock"
         );
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(category))
         ).andDo(handler -> System.out.println(content()))
         .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(
-                        "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
-                ));
+        .andExpect(jsonPath("$.error").value(
+                "Field 'name' must not contain spaces or uppercases and must be separated with '-'."
+        ));
     }
 
     @Test
     public void updateNonExistentCategoryTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory((short)101, "simulated-mock");
 
-        Mockito.when(this.gameCategoryService.update(Mockito.any(GameCategory.class)))
+        // Dependency call handlers
+        when(gameCategoryService.update(any(GameCategory.class)))
                 .thenThrow(new EntityNotFoundException("Couldn't find a Game category with this ID."));
 
+        // Perform and assert
         mockMvc.perform(patch(controllerUpdateURI)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(category))
@@ -155,8 +173,11 @@ public class GameCategoryControllerTest {
 
     @Test
     public void deleteValidCategoryTest() throws Exception {
-        Mockito.doNothing().when(this.gameCategoryService).delete(Mockito.anyShort());
+        // Dependency call handlers
+        doNothing().when(gameCategoryService)
+                .delete(anyShort());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((short)500))
@@ -166,9 +187,11 @@ public class GameCategoryControllerTest {
 
     @Test
     public void deleteNonExistentCategoryTest() throws Exception {
-        Mockito.doThrow(new EntityNotFoundException("Couldn't find a Game category with this ID."))
-                .when(this.gameCategoryService).delete(Mockito.anyShort());
+        // Dependency call handlers
+        doThrow(new EntityNotFoundException("Couldn't find a Game category with this ID."))
+                .when(gameCategoryService).delete(anyShort());
 
+        // Perform and assert
         mockMvc.perform(delete(controllerDeleteURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("id", String.valueOf((short)101))
@@ -179,11 +202,14 @@ public class GameCategoryControllerTest {
     // Queries
     @Test
     public void searchValidCategoryByNameTest() throws Exception {
+        // Preparation
         MGameCategory category = new MGameCategory((short) 501, "mock-category");
 
-        Mockito.when(gameCategoryService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameCategoryService.getByName(Mockito.anyString()))
                 .thenReturn(category);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "mock-category")
@@ -193,9 +219,11 @@ public class GameCategoryControllerTest {
 
     @Test
     public void searchNonExistentCategoryByNameTest() throws Exception {
-        Mockito.when(gameCategoryService.getByName(Mockito.anyString()))
+        // Dependency call handlers
+        when(gameCategoryService.getByName(Mockito.anyString()))
                 .thenThrow(new EntityNotFoundException("Couldn't find a Game category with this name."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "mock-category")
@@ -205,14 +233,17 @@ public class GameCategoryControllerTest {
 
     @Test
     public void searchValidCategoriesByNameContainsTest() throws Exception {
+        // Preparation
         List<MGameCategory> categories = List.of(
                 new MGameCategory((short)501, "mock-categories"),
                 new MGameCategory((short)502, "metroidvania")
         );
 
-        Mockito.when(this.gameCategoryService.getByNameContains(Mockito.anyString(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameCategoryService.getByNameContains(anyString(), any(Pageable.class)))
                 .thenReturn(categories);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameContainsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "m")
@@ -221,9 +252,11 @@ public class GameCategoryControllerTest {
 
     @Test
     public void searchNonExistentCategoriesByNameContainsTest() throws Exception {
-        Mockito.when(this.gameCategoryService.getByNameContains(Mockito.anyString(), Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameCategoryService.getByNameContains(Mockito.anyString(), any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetByNameContainsURI)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .param("name", "m")
@@ -232,23 +265,28 @@ public class GameCategoryControllerTest {
 
     @Test
     public void searchAllCategoriesTest() throws Exception {
+        // Preparation
         List<MGameCategory> categories = List.of(
                 new MGameCategory((short)501, "mock-categories"),
                 new MGameCategory((short)502, "metroidvania")
         );
 
-        Mockito.when(this.gameCategoryService.getAll(Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameCategoryService.getAll(any(Pageable.class)))
                 .thenReturn(categories);
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void searchEmptyAllCategoriesTest() throws Exception {
-        Mockito.when(this.gameCategoryService.getAll(Mockito.any(Pageable.class)))
+        // Dependency call handlers
+        when(gameCategoryService.getAll(any(Pageable.class)))
                 .thenThrow(new EntityNotFoundException("No results for this search."));
 
+        // Perform and assert
         mockMvc.perform(get(controllerGetAllURI))
                 .andExpect(status().isNoContent());
     }

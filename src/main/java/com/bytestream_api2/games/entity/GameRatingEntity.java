@@ -75,17 +75,34 @@ public class GameRatingEntity implements Serializable {
     // -- PUBLIC --
     public GameRatingEntity() {}
     public GameRatingEntity(@NotNull GameRatingEntity gameRatingEntity) {
-        this.id = gameRatingEntity.getId();
-        this.name = gameRatingEntity.getName();
-        this.longName = gameRatingEntity.getLongName();
-        this.location = gameRatingEntity.getLocation();
-        this.description = gameRatingEntity.getDescription();
-        this.createdAt = gameRatingEntity.getCreatedAt();
-        this.updatedAt = gameRatingEntity.getUpdatedAt();
-        this.deletedAt = gameRatingEntity.getDeletedAt();
+        id = gameRatingEntity.getId();
+        name = gameRatingEntity.getName();
+        longName = gameRatingEntity.getLongName();
+        location = gameRatingEntity.getLocation();
+        description = gameRatingEntity.getDescription();
+        createdAt = gameRatingEntity.getCreatedAt();
+        updatedAt = gameRatingEntity.getUpdatedAt();
+        deletedAt = gameRatingEntity.getDeletedAt();
 
-        this.gameRatings = gameRatingEntity.getGameRatings();
-        this.gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
+        gameRatings = gameRatingEntity.getGameRatings();
+        gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
+    }
+    public GameRatingEntity(@NotNull String name) {
+        this.name = name;
+    }
+    public GameRatingEntity(@NotNull String name, @NotNull String longName) {
+        this.name = name;
+        this.longName = longName;
+    }
+    public GameRatingEntity(
+            @NotNull Short id, @NotNull String name, @NotNull String longName, @NotNull String location,
+            @NotNull String description
+    ) {
+        this.id = id;
+        this.name = name;
+        this.longName = longName;
+        this.location = location;
+        this.description = description;
     }
     public GameRatingEntity(
             @NotNull String name, @NotNull String longName, @NotNull String location, @NotNull String description
@@ -114,36 +131,36 @@ public class GameRatingEntity implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getLongName() {
-        return this.longName;
+        return longName;
     }
     public String getLocation() {
-        return this.location;
+        return location;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public List<GameRating> getGameRatings() {
-        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
+        return (gameRatings == null) ? null : new ArrayList<>(gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
+        return (gameRatingDescriptors == null) ? null : new ArrayList<>(gameRatingDescriptors);
     }
 
 }

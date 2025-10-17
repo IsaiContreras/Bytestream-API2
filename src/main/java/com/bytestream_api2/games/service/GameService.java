@@ -5,28 +5,21 @@ import com.bytestream_api2.games.entity.*;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
-import com.bytestream_api2.games.misc.FilenameFormat;
-import com.bytestream_api2.games.misc.GameArtType;
+import com.bytestream_api2.games.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.enums.GameArtType;
+import com.bytestream_api2.games.misc.ImageResourcePackage;
 import com.bytestream_api2.games.repository.GameCategoryRepository;
 import com.bytestream_api2.games.repository.GameRatingDescriptorRepository;
 import com.bytestream_api2.games.repository.GameRatingRepository;
 import com.bytestream_api2.games.repository.GameRepository;
 import com.bytestream_api2.games.utilities.*;
-import com.bytestream_api2.games.misc.ResourcePath;
-import com.bytestream_api2.games.misc.StaticResourcesPaths;
 
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletContext;
 
+import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.env.Environment;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
@@ -38,10 +31,7 @@ import com.bytestream_api2.games.model.MGame;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -51,37 +41,17 @@ public class GameService {
     // -- [[ ATTRIBUTES ]] --
 
     // -- PRIVATE --
+
     // Server Environment Resources
     @Autowired
     private ServletContext context;
 
-    @Autowired
-    private Environment environment;
-
-    @Autowired
-    private EntityManager entityManager;
-
     // Entity Components
-    @Autowired
-    @Qualifier("game_repository")
-    private GameRepository gameRepository;
-
-    @Autowired
-    @Qualifier("game_category_repository")
-    private GameCategoryRepository gameCategoryRepository;
-
-    @Autowired
-    @Qualifier("game_rating_repository")
-    private GameRatingRepository gameRatingRepository;
-
-    @Autowired
-    @Qualifier("game_rating_descriptor_repository")
-    private GameRatingDescriptorRepository gameRatingDescriptorRepository;
-
-    @Autowired
-    @Qualifier("game_converter")
-    private GameConverter gameConverter;
-
+    private final GameRepository gameRepository;
+    private final GameCategoryRepository gameCategoryRepository;
+    private final GameRatingRepository gameRatingRepository;
+    private final GameRatingDescriptorRepository gameRatingDescriptorRepository;
+    private final GameConverter gameConverter;
     private final GameMapper gameMapper;
 
     // Class Components
@@ -92,144 +62,86 @@ public class GameService {
     // -- [[ METHODS ]] --
 
     // -- PRIVATE --
-    private boolean uploadImage(MultipartFile imageMultiPartFile, Game gameData, GameArtType type) {
-        String filename;
-        try {
-            filename = FilenameFormatter.formatFilename(
-                    FilenameFormat.GAME_ART_FORMAT,
-                    new String[]{
-                            gameData.getId().toString().concat(gameData.getName()),
-                            type.getName(),
-                            Objects.requireNonNull(imageMultiPartFile.getContentType()).split("/")[1]
-                    }
-            );
-        } catch (Exception e) { return false; }
-        if (filename == null)
-            return false;
-
-        return ImageResourceUploader.uploadImageFile(
-                imageMultiPartFile,
-                ResourcePathProvider.getPathOfEntity(ResourcePath.GAME_ART, gameData.getId().toString()),
-                filename
-        );
-    }
-
-    private List<MGame> getMediaURIsOfList(List<MGame> gameList) {
-        for (MGame gameItem : gameList)
-            this.getMediaURIs(gameItem);
-        return gameList;
-    }
-
-    private MGame getMediaURIs(MGame game) {
-        File[] files;
-        try {
-            files = new File(
-                    Objects.requireNonNull(ResourcePathProvider.getPathOfEntity(
-                            ResourcePath.GAME_ART, String.valueOf(game.getId())
-                    )).toString()
-            ).listFiles();
-        } catch (Exception e) { return game; }
-        if (files == null)
-            return game;
-
-        for (File fileItem : files) {
-            GameArtType artType = Arrays.stream(GameArtType.values()).filter(
-                    type -> fileItem.getName().contains(type.getName())
-            ).findFirst().orElse(null);
-            if (artType == null)
-                continue;
-
-            String fileURI;
-            try {
-                fileURI = Objects.requireNonNull(
-                        StaticResourcesPaths.getByResourcePath(ResourcePath.GAME_ART)
-                ).constructFullURI(
-                        environment,
-                        new String[] {
-                                game.getName(),
-                                fileItem.getName()
-                        }
-                );
-            } catch (Exception e) { return game; }
-
-            switch(artType) {
-                case COVER_ART -> game.setCoverURI(fileURI);
-                case LANDSCAPE_ART -> game.setLandsapeURI(fileURI);
-            }
-        }
-
-        return game;
-    }
-
-    private void resolveRelatedEntities(Game game) {
-        List<GameCategory> retrievedCategos = game.getGameCategories() != null ?
-                game.getGameCategories().stream()
-                        .map(item -> gameCategoryRepository.findByName(item.getName()))
-                        .toList()
-                : null;
-        List<GameRating> retrievedRatings = game.getGameRatings() != null ?
-                game.getGameRatings().stream()
-                        .map(item -> gameRatingRepository.findByName(item.getName()))
-                        .toList()
-                : null;
-        List<GameRatingDescriptor> retrievedRatingDescriptors = game.getGameRatingDescriptors() != null ?
-                game.getGameRatingDescriptors().stream()
-                        .map(item -> gameRatingDescriptorRepository.findByName(item.getName()))
-                        .toList()
-                : null;
-
-        game.setGameCategories(retrievedCategos);
-        game.setGameRatings(retrievedRatings);
-        game.setGameRatingDescriptors(retrievedRatingDescriptors);
-    }
 
     // -- PUBLIC --
     @Autowired
-    public GameService(GameMapper gameMapper) {
+    public GameService(
+            @Qualifier("game_repository") GameRepository gameRepository,
+            @Qualifier("game_category_repository") GameCategoryRepository gameCategoryRepository,
+            @Qualifier("game_rating_repository") GameRatingRepository gameRatingRepository,
+            @Qualifier("game_rating_descriptor_repository") GameRatingDescriptorRepository gameRatingDescriptorRepository,
+            @Qualifier("game_converter") GameConverter gameConverter,
+            GameMapper gameMapper
+    ) {
+        this.gameRepository = gameRepository;
+        this.gameCategoryRepository = gameCategoryRepository;
+        this.gameRatingRepository = gameRatingRepository;
+        this.gameRatingDescriptorRepository = gameRatingDescriptorRepository;
+        this.gameConverter = gameConverter;
         this.gameMapper = gameMapper;
     }
 
     // CUD
+    @Transactional
     public MGame create(
-            Game game,
+            @NotNull Game game,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
-        this.resolveRelatedEntities(game);
+        EntityResolver.resolveGameEntities(
+                gameCategoryRepository,
+                gameRatingRepository,
+                gameRatingDescriptorRepository,
+                game
+        );
 
         // Check if it has at least one GameCategory.
-        if (game.getGameCategories().isEmpty())
+        if (game.getGameCategories() == null || game.getGameCategories().isEmpty())
             throw new InvalidEntityRelationsException("Game must have at least one related category.");
 
         // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
-        for (
-                GameRatingEntity ratingEntityItem :
-                game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
-        ) {
-            if (
-                    game.getGameRatings().stream()
-                            .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
-                            .count() > 1
-            )
-                throw new InvalidEntityRelationsException(
-                        "Game must be related to only one rating from a rating entity."
-                );
-        }
+        if (game.getGameRatings() != null)
+            for (
+                    GameRatingEntity ratingEntityItem :
+                    game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
+            ) {
+                if (
+                        game.getGameRatings().stream().filter(
+                                item -> Objects.equals(
+                                        item.getGameRatingEntity().getName(),
+                                        ratingEntityItem.getName())
+                        ).count() > 1
+                )
+                    throw new InvalidEntityRelationsException(
+                            "Game must be related to only one rating from a rating entity."
+                    );
+            }
 
+        MGame result = new MGame(gameRepository.save(game), true);
         // Try to upload images.
-        if(
-            !this.uploadImage(coverImage, game, GameArtType.COVER_ART) ||
-            !this.uploadImage(landscapeImage, game, GameArtType.LANDSCAPE_ART)
+        if (
+                (
+                        coverImage != null && !(!coverImage.isEmpty() &&
+                        ImageResourceManager.uploadEntityImage(
+                                coverImage, result, new String[] {GameArtType.COVER_ART.toString()}
+                        ))
+                ) ||
+                (
+                        landscapeImage != null && !(!landscapeImage.isEmpty() &&
+                        ImageResourceManager.uploadEntityImage(
+                                landscapeImage, result, new String[] {GameArtType.LANDSCAPE_ART.toString()}
+                        ))
+                )
         )
             throw new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded.");
 
-        Game result = this.gameRepository.save(game);
-
-        return this.getMediaURIs(new MGame(result, true));
+        ImageResourceManager.getURIsOfEntityImage(result);
+        return result;
     }
 
+    @Transactional
     public MGame update(
-            Game game,
+            @NotNull Game game,
             MultipartFile coverImage,
             MultipartFile landscapeImage
     ) {
@@ -237,43 +149,61 @@ public class GameService {
         if (gameCurrentState == null)
             throw new EntityNotFoundException("Couldn't find a Game with this ID.");
 
-        this.resolveRelatedEntities(game);
+        EntityResolver.resolveGameEntities(
+                gameCategoryRepository,
+                gameRatingRepository,
+                gameRatingDescriptorRepository,
+                game
+        );
+
+        // Check if it has at least one GameCategory and one GameRating.
+        if (game.getGameCategories() == null || game.getGameCategories().isEmpty())
+            throw new InvalidEntityRelationsException("Game must have at least one related category.");
+
+        // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
+        if (game.getGameRatings() != null)
+            for (
+                    GameRatingEntity ratingEntityItem :
+                    game.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
+            ) {
+                if (
+                        game.getGameRatings().stream()
+                                .filter(
+                                        item -> Objects.equals(
+                                                item.getGameRatingEntity().getName(),
+                                                ratingEntityItem.getName()
+                                        )
+                                )
+                                .count() > 1
+                )
+                    throw new InvalidEntityRelationsException(
+                            "Game must be related to only one rating from a rating entity."
+                    );
+            }
 
         Game updateData = new Game(gameCurrentState);
         gameMapper.partialUpdateGame(updateData, game);
 
-        // Check if it has at least one GameCategory and one GameRating.
-        if (updateData.getGameCategories().isEmpty())
-            throw new InvalidEntityRelationsException("Game must have at least one related category.");
-
-        // Check if there is no more than one GameRating from a RatingEntity assigned to this Game.
-        for (
-                GameRatingEntity ratingEntityItem :
-                updateData.getGameRatings().stream().map(GameRating::getGameRatingEntity).toList()
-        ) {
-            if (
-                    updateData.getGameRatings().stream()
-                            .filter(item -> item.getGameRatingEntity() == ratingEntityItem)
-                            .count() > 1
-            )
-                throw new InvalidEntityRelationsException(
-                        "Game must be related to only one rating from a rating entity."
-                );
-        }
-
+        MGame result = new MGame(gameRepository.save(updateData), true);
         // Try to upload images
         if (
-                !(coverImage.isEmpty() || landscapeImage.isEmpty()) &&
                 (
-                        !this.uploadImage(coverImage, updateData, GameArtType.COVER_ART) ||
-                        !this.uploadImage(landscapeImage, updateData, GameArtType.LANDSCAPE_ART)
+                        coverImage != null && !(!coverImage.isEmpty() &&
+                        ImageResourceManager.uploadEntityImage(
+                                coverImage, result, new String[] {GameArtType.COVER_ART.toString()}
+                        ))
+                ) ||
+                (
+                        landscapeImage != null && !(!landscapeImage.isEmpty() &&
+                        ImageResourceManager.uploadEntityImage(
+                                landscapeImage, result, new String[] {GameArtType.LANDSCAPE_ART.toString()}
+                        ))
                 )
         )
             throw new MediaUploadFailedException("Either Cover image or landscape image couldn't be uploaded.");
 
-        this.gameRepository.save(updateData);
-
-        return this.getMediaURIs(new MGame(updateData, true));
+        ImageResourceManager.getURIsOfEntityImage(result);
+        return result;
     }
 
     public void delete(long id) {
@@ -282,64 +212,21 @@ public class GameService {
             throw new EntityNotFoundException("Couldn't find a Game with this ID.");
 
         game.setDeletedAt(new Date());
-
         gameRepository.save(game);
     }
 
     public void hardDelete(long id) {
-        this.gameRepository.delete(this.gameRepository.findById(id));
+        gameRepository.delete(gameRepository.findById(id));
     }
 
     // Queries
-    public ResponseEntity<byte[]> getImage(String name, String filename, Integer width, Integer height) {
+    public ImageResourcePackage getImage(String name, String filename, Integer width, Integer height)
+            throws IOException {
         Game game = gameRepository.findByName(name);
         if (game == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw new EntityNotFoundException("Couldn't find a Game with this name.");
 
-        // Obtiene la ruta de la imagen
-        Path filePath;
-        try {
-            filePath = Objects.requireNonNull(
-                    ResourcePathProvider
-                            .getPathOfEntity(ResourcePath.GAME_ART, game.getId().toString())
-            ).resolve(filename);
-        } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-
-        try {
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (!resource.exists() || !resource.isReadable())
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-
-            BufferedImage image = ImageIO.read(filePath.toFile());
-            String extension = FilenameFormatter.getFileExension(filePath.toString());
-            if (extension == null)
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-
-            image = ImageResourceUploader.resizeImage(
-                    image,
-                    width != null ? width : image.getWidth(),
-                    height != null ? height : image.getHeight()
-            );
-
-            String contentType = context.getMimeType(filePath.toString());
-            if (contentType == null)
-                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-
-            MediaType type = MediaType.parseMediaType(contentType);
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .contentType(type)
-                    .header(
-                            HttpHeaders.CONTENT_DISPOSITION,
-                            "inline; filename=\"" +
-                                    resource.getFilename() + "\""
-                    ).body(DataConverter.imageToByteArray(image, extension));
-        } catch(Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        return ImageResourceManager.getResourceImage(context, (ImageContentEntity)game, filename, width, height);
     }
 
     public MGame getByName(String name) {
@@ -347,7 +234,10 @@ public class GameService {
         if (game == null || game.getDeletedAt() != null)
             throw new EntityNotFoundException("Couldn't find a Game with this name.");
 
-        return this.getMediaURIs(new MGame(game, true));
+        MGame result = new MGame(game, true);
+        ImageResourceManager.getURIsOfEntityImage(result);
+
+        return result;
     }
 
     public List<MGame> getByTitle(String title, Pageable pageable) {
@@ -357,7 +247,8 @@ public class GameService {
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");
 
-        return this.getMediaURIsOfList(results);
+        results.forEach(ImageResourceManager::getURIsOfEntityImage);
+        return results;
     }
 
     public List<MGame> getByGameCategories(List<GameCategory> categories, Pageable pageable) {
@@ -367,7 +258,8 @@ public class GameService {
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");
 
-        return this.getMediaURIsOfList(results);
+        results.forEach(ImageResourceManager::getURIsOfEntityImage);
+        return results;
     }
 
     public List<MGame> getByGameRatings(List<GameRating> ratings, Pageable pageable) {
@@ -377,31 +269,34 @@ public class GameService {
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");
 
-        return this.getMediaURIsOfList(results);
+        results.forEach(ImageResourceManager::getURIsOfEntityImage);
+        return results;
     }
 
     public List<MGame> getByGameRatingDescriptors(
             List<GameRatingDescriptor> ratingDescriptors, Pageable pageable
     ) {
-        List<MGame> results = gameConverter
-                .parseToList(gameRepository.findByGameRatingDescriptorsContains(
+        List<MGame> results = gameConverter.parseToList(
+                gameRepository.findByGameRatingDescriptorsContains(
                         ratingDescriptors, pageable
                 ).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");
 
-        return this.getMediaURIsOfList(results);
+        results.forEach(ImageResourceManager::getURIsOfEntityImage);
+        return results;
     }
 
     public List<MGame> getAll(Pageable pageable) {
-        List<MGame> results = gameConverter
-                .parseToList(gameRepository.findAll(pageable).getContent())
+        List<MGame> results = gameConverter.parseToList(
+                gameRepository.findAll(pageable).getContent())
                 .stream().filter(item -> item.getDeletedAt() == null).toList();
         if (results.isEmpty())
             throw new EntityNotFoundException("No results for this search.");
 
-        return this.getMediaURIsOfList(results);
+        results.forEach(ImageResourceManager::getURIsOfEntityImage);
+        return results;
     }
 
 }
