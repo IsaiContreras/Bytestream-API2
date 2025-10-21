@@ -4,10 +4,16 @@ import com.bytestream_api2.games.converter.GameRatingEntityConverter;
 import com.bytestream_api2.games.entity.GameRatingEntity;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.exception.imageresource.ImagePathUnresolvedException;
+import com.bytestream_api2.games.exception.imageresource.UncaughtImageExtensionException;
+import com.bytestream_api2.games.exception.imageresource.UnreadableResourceException;
 import com.bytestream_api2.games.mapper.GameRatingEntityMapper;
+import com.bytestream_api2.games.misc.ImageResourcePackage;
 import com.bytestream_api2.games.model.MGameRatingEntity;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
+import com.bytestream_api2.games.repository.GameRatingRepository;
 import com.bytestream_api2.games.utilities.ImageResourceManager;
+import jakarta.servlet.ServletContext;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
@@ -20,9 +26,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -411,23 +419,218 @@ public class GameRatingEntityServiceTest {
     }
 
     // Queries
-
     @Test
-    public void getValidImageLogoTest() {
+    public void getValidImageLogoTest() throws Exception {
         // Preparation
+        ImageResourcePackage resourcePackage = new ImageResourcePackage(
+                "ESRB.png",
+                MediaType.IMAGE_PNG_VALUE,
+                new byte[] {1}
+        );
+
+        GameRatingEntity gameRatingEntity = new GameRatingEntity(
+                "ESRB",
+                "Entertainment Software Rating Board",
+                "America",
+                "Rating organization of america."
+        );
+
+        ImageResourcePackage result;
 
         // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(gameRatingEntity);
+
+        try (MockedStatic<ImageResourceManager> imageResourceManagerMocked = mockStatic(ImageResourceManager.class)) {
+            imageResourceManagerMocked.when(() -> ImageResourceManager.getResourceImage(
+                    nullable(ServletContext.class),
+                    any(MGameRatingEntity.class),
+                    anyString(),
+                    anyInt(),
+                    anyInt()
+            )).thenReturn(resourcePackage);
 
         // Assertions
+             result = gameRatingEntityService.getLogoImage(
+                    "ESRB",
+                    "ESRB.png",
+                    32,
+                    32
+            );
+        }
+
+        assertNotNull(result);
+        assertEquals("ESRB.png", result.getFilname());
+        assertEquals(MediaType.IMAGE_PNG_VALUE, result.getMediaType().toString());
     }
 
     @Test
     public void getNonExistentImageLogoTest() {
-        // Preparation
-
         // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(null);
 
         // Assertions
+        assertThrows(
+                EntityNotFoundException.class,
+                () -> gameRatingEntityService.getLogoImage("ESRB", "ESRB.png", null, null)
+        );
+    }
+
+    @Test
+    public void getIOExceptionImageLogoTest() {
+        // Preparation
+        GameRatingEntity gameRatingEntity = new GameRatingEntity(
+                "ESRB",
+                "Entertainment Software Rating Board",
+                "America",
+                "Rating organization of america."
+        );
+
+        // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(gameRatingEntity);
+
+        try (MockedStatic<ImageResourceManager> imageResourceManagerMocked = mockStatic(ImageResourceManager.class)) {
+            imageResourceManagerMocked.when(() -> ImageResourceManager.getResourceImage(
+                    nullable(ServletContext.class),
+                    any(MGameRatingEntity.class),
+                    anyString(),
+                    nullable(Integer.class),
+                    nullable(Integer.class)
+            )).thenThrow(new IOException());
+
+            // Assertions
+             assertThrows(
+                    IOException.class,
+                    () -> gameRatingEntityService.getLogoImage(
+                            "ESRB",
+                            "ESRB.png",
+                            null,
+                            null
+                    )
+            );
+        }
+    }
+
+    @Test
+    public void getUnresolvedPathImageLogoTest() {
+        // Preparation
+        GameRatingEntity gameRatingEntity = new GameRatingEntity(
+                "ESRB",
+                "Entertainment Software Rating Board",
+                "America",
+                "Rating organization of america."
+        );
+
+        Exception exception;
+
+        // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(gameRatingEntity);
+
+        try (MockedStatic<ImageResourceManager> imageResourceManagerMocked = mockStatic(ImageResourceManager.class)) {
+            imageResourceManagerMocked.when(() -> ImageResourceManager.getResourceImage(
+                    nullable(ServletContext.class),
+                    any(MGameRatingEntity.class),
+                    anyString(),
+                    nullable(Integer.class),
+                    nullable(Integer.class)
+            )).thenThrow(new ImagePathUnresolvedException("Couldn't resolve image file path."));
+
+        // Assertions
+            exception = assertThrows(
+                    ImagePathUnresolvedException.class,
+                    () -> gameRatingEntityService.getLogoImage(
+                            "ESRB",
+                            "ESRB.png",
+                            null,
+                            null
+                    )
+            );
+        }
+
+        assertEquals(exception.getMessage(), "Couldn't resolve image file path.");
+    }
+
+    @Test
+    public void getUnreadableResourceImageLogoTest() {
+        // Preparation
+        GameRatingEntity gameRatingEntity = new GameRatingEntity(
+                "ESRB",
+                "Entertainment Software Rating Board",
+                "America",
+                "Rating organization of america."
+        );
+
+        Exception exception;
+
+        // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(gameRatingEntity);
+
+        try (MockedStatic<ImageResourceManager> imageResourceManagerMocked = mockStatic(ImageResourceManager.class)) {
+            imageResourceManagerMocked.when(() -> ImageResourceManager.getResourceImage(
+                    nullable(ServletContext.class),
+                    any(MGameRatingEntity.class),
+                    anyString(),
+                    nullable(Integer.class),
+                    nullable(Integer.class)
+            )).thenThrow(new UnreadableResourceException("Resource couldn't load or is unreadable."));
+
+            // Assertions
+            exception = assertThrows(
+                    UnreadableResourceException.class,
+                    () -> gameRatingEntityService.getLogoImage(
+                            "ESRB",
+                            "ESRB.png",
+                            null,
+                            null
+                    )
+            );
+        }
+
+        assertEquals(exception.getMessage(), "Resource couldn't load or is unreadable.");
+    }
+
+    @Test
+    public void getUncaughtExtensionImageLogoTest() {
+        // Preparation
+        GameRatingEntity gameRatingEntity = new GameRatingEntity(
+                "ESRB",
+                "Entertainment Software Rating Board",
+                "America",
+                "Rating organization of america."
+        );
+
+        Exception exception;
+
+        // Dependency and method call handlers
+        when(gameRatingEntityRepository.findByName(anyString()))
+                .thenReturn(gameRatingEntity);
+
+        try (MockedStatic<ImageResourceManager> imageResourceManagerMocked = mockStatic(ImageResourceManager.class)) {
+            imageResourceManagerMocked.when(() -> ImageResourceManager.getResourceImage(
+                    nullable(ServletContext.class),
+                    any(MGameRatingEntity.class),
+                    anyString(),
+                    nullable(Integer.class),
+                    nullable(Integer.class)
+            )).thenThrow(new UncaughtImageExtensionException("Couldn't caught image file extension."));
+
+            // Assertions
+            exception = assertThrows(
+                    UncaughtImageExtensionException.class,
+                    () -> gameRatingEntityService.getLogoImage(
+                            "ESRB",
+                            "ESRB.png",
+                            null,
+                            null
+                    )
+            );
+        }
+
+        assertEquals(exception.getMessage(), "Couldn't caught image file extension.");
     }
 
     @Test

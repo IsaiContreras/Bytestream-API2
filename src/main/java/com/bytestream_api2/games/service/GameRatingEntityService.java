@@ -117,13 +117,8 @@ public class GameRatingEntityService {
         if (ratingEntity == null)
             throw new EntityNotFoundException("Couldn't find a Game with this name.");
 
-        return ImageResourceManager.getResourceImage(
-                context,
-                (ImageContentEntity)ratingEntity,
-                filename,
-                width,
-                height
-        );
+        MGameRatingEntity result = new MGameRatingEntity(ratingEntity);
+        return ImageResourceManager.getResourceImage(context, result, filename, width, height);
     }
 
     public MGameRatingEntity getByName(String name) {

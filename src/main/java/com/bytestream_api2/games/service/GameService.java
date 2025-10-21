@@ -226,7 +226,8 @@ public class GameService {
         if (game == null)
             throw new EntityNotFoundException("Couldn't find a Game with this name.");
 
-        return ImageResourceManager.getResourceImage(context, (ImageContentEntity)game, filename, width, height);
+        MGame result = new MGame(game, false);
+        return ImageResourceManager.getResourceImage(context, result, filename, width, height);
     }
 
     public MGame getByName(String name) {
