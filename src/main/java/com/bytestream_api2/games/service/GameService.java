@@ -5,7 +5,6 @@ import com.bytestream_api2.games.entity.*;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
 import com.bytestream_api2.games.enums.GameArtType;
 import com.bytestream_api2.games.misc.ImageResourcePackage;
 import com.bytestream_api2.games.repository.GameCategoryRepository;

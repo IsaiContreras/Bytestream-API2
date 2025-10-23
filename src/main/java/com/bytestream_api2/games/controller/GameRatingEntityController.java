@@ -48,13 +48,11 @@ public class GameRatingEntityController {
     )  {
         try {
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(BodyFormatter.result(
-                            gameRatingEntityService.create(gameRatingEntity, logoImage)
-                    ));
-        } catch (MediaUploadFailedException mufe) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
-        } catch(DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(dae.getMessage()));
+                    .body(BodyFormatter.result(gameRatingEntityService.create(gameRatingEntity, logoImage)));
+        } catch (MediaUploadFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(e.getMessage()));
+        } catch(DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
         }
@@ -67,15 +65,13 @@ public class GameRatingEntityController {
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(BodyFormatter.result(
-                            gameRatingEntityService.update(gameRatingEntity, logoImage)
-                    ));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
-        } catch (MediaUploadFailedException mufe) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(mufe.getMessage()));
-        } catch (DataAccessException dae) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(dae.getMessage()));
+                    .body(BodyFormatter.result(gameRatingEntityService.update(gameRatingEntity, logoImage)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
+        } catch (MediaUploadFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(BodyFormatter.error(e.getMessage()));
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
         }
@@ -88,8 +84,8 @@ public class GameRatingEntityController {
         try {
             gameRatingEntityService.delete(id);
             return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
         }
@@ -103,8 +99,8 @@ public class GameRatingEntityController {
             gameRatingEntityService.hardDelete(id);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(BodyFormatter.result("Hard deleted successfully!"));
-        } catch (EmptyResultDataAccessException erdae) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(erdae.getMessage()));
+        } catch (EmptyResultDataAccessException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
         }
@@ -117,11 +113,9 @@ public class GameRatingEntityController {
     ) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(BodyFormatter.result(
-                            gameRatingEntityService.getByName(name)
-                    ));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+                    .body(BodyFormatter.result(gameRatingEntityService.getByName(name)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
         }
@@ -131,10 +125,8 @@ public class GameRatingEntityController {
     public ResponseEntity<Map<String, ?>> getAll(Pageable pageable) {
         try {
             return ResponseEntity.status(HttpStatus.OK)
-                    .body(BodyFormatter.result(
-                            gameRatingEntityService.getAll(pageable)
-                    ));
-        } catch (EntityNotFoundException enfe) {
+                    .body(BodyFormatter.result(gameRatingEntityService.getAll(pageable)));
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));

@@ -67,8 +67,8 @@ public class EntityStaticResourceController {
                     ).body(image.getImageByteArray());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (
                 ImagePathUnresolvedException |
                 UnreadableResourceException |
@@ -101,8 +101,8 @@ public class EntityStaticResourceController {
                     ).body(image.getImageByteArray());
         } catch(IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (
                 ImagePathUnresolvedException |
                 UnreadableResourceException |
@@ -135,8 +135,8 @@ public class EntityStaticResourceController {
                     ).body(image.getImageByteArray());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
-        } catch (EntityNotFoundException enfe) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(enfe.getMessage()));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
         } catch (
                 ImagePathUnresolvedException |
                 UnreadableResourceException |

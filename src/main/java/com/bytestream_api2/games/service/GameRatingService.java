@@ -3,7 +3,6 @@ package com.bytestream_api2.games.service;
 import com.bytestream_api2.games.converter.GameRatingConverter;
 import com.bytestream_api2.games.exception.EntityNotFoundException;
 import com.bytestream_api2.games.exception.MediaUploadFailedException;
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
 import com.bytestream_api2.games.mapper.GameRatingMapper;
 import com.bytestream_api2.games.misc.ImageResourcePackage;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
