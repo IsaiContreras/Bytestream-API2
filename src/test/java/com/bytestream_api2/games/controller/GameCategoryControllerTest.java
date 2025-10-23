@@ -1,7 +1,7 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameCategory;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.model.MGameCategory;
 import com.bytestream_api2.games.service.GameCategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;

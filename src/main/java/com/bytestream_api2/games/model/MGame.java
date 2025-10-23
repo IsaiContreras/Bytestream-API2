@@ -4,11 +4,11 @@ import com.bytestream_api2.games.entity.Game;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
-import com.bytestream_api2.games.enums.FilenameFormat;
-import com.bytestream_api2.games.enums.ResourcePath;
-import com.bytestream_api2.games.enums.StaticResourcesPaths;
-import com.bytestream_api2.games.utilities.FilenameFormatter;
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.ResourcePath;
+import com.bytestream_api2.games.utilities.enums.StaticResourcesPaths;
+import com.bytestream_api2.games.utilities.statics.FilenameFormatter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

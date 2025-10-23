@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.enums;
+package com.bytestream_api2.games.utilities.enums;
 
-import com.bytestream_api2.games.configuration.ResourcePathsConfigurer;
+import com.bytestream_api2.games.configuration.enums.ResourcePathsConfigurer;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.utilities;
+package com.bytestream_api2.games.utilities.statics;
 
 import javax.imageio.ImageIO;
 import java.awt.*;

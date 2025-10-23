@@ -1,16 +1,16 @@
 package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameRatingConverter;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
-import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.MediaUploadFailedException;
 import com.bytestream_api2.games.mapper.GameRatingMapper;
-import com.bytestream_api2.games.misc.ImageResourcePackage;
+import com.bytestream_api2.games.utilities.classes.ImageResourcePackage;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;
 import com.bytestream_api2.games.repository.GameRatingRepository;
-import com.bytestream_api2.games.utilities.*;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.model.MGameRating;
 
+import com.bytestream_api2.games.utilities.statics.ImageResourceManager;
 import jakarta.servlet.ServletContext;
 
 import jakarta.transaction.Transactional;

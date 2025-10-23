@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.configuration;
+package com.bytestream_api2.games.configuration.enums;
 
-import com.bytestream_api2.games.enums.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
 import jakarta.annotation.PostConstruct;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

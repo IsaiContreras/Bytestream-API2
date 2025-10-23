@@ -1,9 +1,9 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.service.GameRatingDescriptorService;
-import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
 import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnCreate;
 import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;

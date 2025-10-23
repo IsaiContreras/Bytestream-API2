@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.exception;
+package com.bytestream_api2.games.exception.services;
 
 public class InvalidEntityRelationsException extends RuntimeException {
 

@@ -1,9 +1,9 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.Game;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
-import com.bytestream_api2.games.exception.InvalidEntityRelationsException;
-import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.InvalidEntityRelationsException;
+import com.bytestream_api2.games.exception.services.MediaUploadFailedException;
 import com.bytestream_api2.games.model.MGame;
 import com.bytestream_api2.games.model.MGameCategory;
 import com.bytestream_api2.games.model.MGameRating;

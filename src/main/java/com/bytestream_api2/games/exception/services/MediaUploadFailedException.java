@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.exception;
+package com.bytestream_api2.games.exception.services;
 
-public class EntityNotFoundException extends RuntimeException{
+public class MediaUploadFailedException extends RuntimeException {
 
     // -- [[ ATTRIBUTES ]] --
 
@@ -13,7 +13,7 @@ public class EntityNotFoundException extends RuntimeException{
     // -- PRIVATE --
 
     // -- PUBLIC --
-    public EntityNotFoundException(String message) {
+    public MediaUploadFailedException(String message) {
         super(message);
     }
 

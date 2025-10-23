@@ -1,14 +1,14 @@
 package com.bytestream_api2.games.controller;
 
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.exception.imageresource.ImagePathUnresolvedException;
 import com.bytestream_api2.games.exception.imageresource.UncaughtImageExtensionException;
 import com.bytestream_api2.games.exception.imageresource.UnreadableResourceException;
-import com.bytestream_api2.games.misc.ImageResourcePackage;
+import com.bytestream_api2.games.utilities.classes.ImageResourcePackage;
 import com.bytestream_api2.games.service.GameRatingEntityService;
 import com.bytestream_api2.games.service.GameRatingService;
 import com.bytestream_api2.games.service.GameService;
-import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;

@@ -1,9 +1,9 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameCategory;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.service.GameCategoryService;
-import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
 import com.bytestream_api2.games.validation_groups.GameCategory.OnCreate;
 import com.bytestream_api2.games.validation_groups.GameCategory.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;

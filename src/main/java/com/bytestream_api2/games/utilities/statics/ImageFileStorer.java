@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.utilities;
+package com.bytestream_api2.games.utilities.statics;
 
 import org.jetbrains.annotations.NotNull;
 

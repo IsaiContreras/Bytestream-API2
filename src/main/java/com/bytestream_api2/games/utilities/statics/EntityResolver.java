@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.utilities;
+package com.bytestream_api2.games.utilities.statics;
 
 import com.bytestream_api2.games.entity.Game;
 import com.bytestream_api2.games.entity.GameCategory;

@@ -1,7 +1,7 @@
 package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameRatingDescriptorConverter;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.mapper.GameRatingDescriptorMapper;
 import com.bytestream_api2.games.repository.GameRatingDescriptorRepository;
 import com.bytestream_api2.games.repository.GameRatingEntityRepository;

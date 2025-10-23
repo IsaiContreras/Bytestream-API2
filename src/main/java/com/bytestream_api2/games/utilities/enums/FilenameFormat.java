@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.enums;
+package com.bytestream_api2.games.utilities.enums;
 
-import com.bytestream_api2.games.configuration.FilenameFormatConfigurer;
+import com.bytestream_api2.games.configuration.enums.FilenameFormatConfigurer;
 import org.jetbrains.annotations.NotNull;
 
 public enum FilenameFormat {

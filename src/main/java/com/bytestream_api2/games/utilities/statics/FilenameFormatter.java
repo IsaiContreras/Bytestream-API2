@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.utilities;
+package com.bytestream_api2.games.utilities.statics;
 
-import com.bytestream_api2.games.enums.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;

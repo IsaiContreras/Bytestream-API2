@@ -1,11 +1,11 @@
 package com.bytestream_api2.games.model;
 
 import com.bytestream_api2.games.entity.GameRatingEntity;
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
-import com.bytestream_api2.games.enums.FilenameFormat;
-import com.bytestream_api2.games.enums.ResourcePath;
-import com.bytestream_api2.games.enums.StaticResourcesPaths;
-import com.bytestream_api2.games.utilities.FilenameFormatter;
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.ResourcePath;
+import com.bytestream_api2.games.utilities.enums.StaticResourcesPaths;
+import com.bytestream_api2.games.utilities.statics.FilenameFormatter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;

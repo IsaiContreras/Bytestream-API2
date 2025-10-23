@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.enums;
+package com.bytestream_api2.games.utilities.enums;
 
 import org.springframework.core.env.Environment;
 

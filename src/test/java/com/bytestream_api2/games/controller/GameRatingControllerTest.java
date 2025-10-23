@@ -1,8 +1,8 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameRating;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
-import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.MediaUploadFailedException;
 import com.bytestream_api2.games.model.MGameRating;
 import com.bytestream_api2.games.service.GameRatingService;
 import com.fasterxml.jackson.databind.ObjectMapper;

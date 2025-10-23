@@ -1,7 +1,6 @@
 package com.bytestream_api2.games.converter;
 
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
-import com.bytestream_api2.games.model.MGameRating;
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
 import org.springframework.stereotype.Component;
 
 import com.bytestream_api2.games.entity.Game;

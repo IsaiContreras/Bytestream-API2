@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.interfaces;
+package com.bytestream_api2.games.utilities.interfaces;
 
-import com.bytestream_api2.games.enums.ResourcePath;
+import com.bytestream_api2.games.utilities.enums.ResourcePath;
 
 public interface ImageContentEntity {
 

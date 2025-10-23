@@ -1,7 +1,7 @@
 package com.bytestream_api2.games.service;
 
 import com.bytestream_api2.games.converter.GameCategoryConverter;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.mapper.GameCategoryMapper;
 import com.bytestream_api2.games.repository.GameCategoryRepository;
 import com.bytestream_api2.games.entity.GameCategory;

@@ -1,6 +1,6 @@
 package com.bytestream_api2.games.handler;
 
-import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.*;

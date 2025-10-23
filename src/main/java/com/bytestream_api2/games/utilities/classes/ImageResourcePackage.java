@@ -1,4 +1,4 @@
-package com.bytestream_api2.games.misc;
+package com.bytestream_api2.games.utilities.classes;
 
 import org.springframework.http.MediaType;
 

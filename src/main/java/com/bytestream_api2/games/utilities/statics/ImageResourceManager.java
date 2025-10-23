@@ -1,11 +1,11 @@
-package com.bytestream_api2.games.utilities;
+package com.bytestream_api2.games.utilities.statics;
 
 import com.bytestream_api2.games.exception.imageresource.ImagePathUnresolvedException;
 import com.bytestream_api2.games.exception.imageresource.UncaughtImageExtensionException;
 import com.bytestream_api2.games.exception.imageresource.UnreadableResourceException;
-import com.bytestream_api2.games.interfaces.ImageContentEntity;
-import com.bytestream_api2.games.misc.ImageResourcePackage;
-import com.bytestream_api2.games.enums.ResourcePath;
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.utilities.classes.ImageResourcePackage;
+import com.bytestream_api2.games.utilities.enums.ResourcePath;
 import jakarta.servlet.ServletContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

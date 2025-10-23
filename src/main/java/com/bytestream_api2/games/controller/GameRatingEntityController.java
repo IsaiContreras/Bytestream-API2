@@ -1,10 +1,10 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameRatingEntity;
-import com.bytestream_api2.games.exception.EntityNotFoundException;
-import com.bytestream_api2.games.exception.MediaUploadFailedException;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
+import com.bytestream_api2.games.exception.services.MediaUploadFailedException;
 import com.bytestream_api2.games.service.GameRatingEntityService;
-import com.bytestream_api2.games.utilities.BodyFormatter;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
 import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnCreate;
 import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
