@@ -1,7 +1,9 @@
-package com.bytestream_api2.games.configuration;
+package com.bytestream_api2.games.configuration.enums;
 
-import com.bytestream_api2.games.misc.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -12,6 +14,7 @@ import java.util.Objects;
 public class FilenameFormatConfigurer {
 
     private final Environment environment;
+    private static final Log logger = LogFactory.getLog(FilenameFormatConfigurer.class);
 
     @Autowired
     public FilenameFormatConfigurer(Environment environment) {
@@ -26,7 +29,9 @@ public class FilenameFormatConfigurer {
                         this,
                         Objects.requireNonNull(environment.getProperty(value.getPath()))
                 );
-            } catch (Exception ignored) { } // TODO: LOGGER
+            } catch (Exception e) {
+                logger.error("FilenameFormat " + value.getPath() + " couldn't be loaded or does not exist", e);
+            }
         }
     }
 

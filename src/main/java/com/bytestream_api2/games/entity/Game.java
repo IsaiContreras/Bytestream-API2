@@ -1,6 +1,11 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.validation_groups.Game.OnCreate;
+import com.bytestream_api2.games.validation_groups.Game.OnUpdate;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,16 +26,29 @@ public class Game implements Serializable {
     private Long id;
 
     @Column(name="name", unique=true, nullable=false, length=63)
+    @NotBlank(message="Field 'name' is mandatory.", groups=OnCreate.class)
+    @Size(max=63, message="Field 'name' must be less than 63 characters long.", groups={OnCreate.class, OnUpdate.class})
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^$|^[a-z0-9\\p{Punct}&&[^_]-]+(-[a-z0-9\\p{Punct}&&[^_]-]+)*$",
+            groups={OnCreate.class, OnUpdate.class}
+    )
     private String name;
 
     @Column(name="title", nullable=false, length=63)
+    @NotBlank(message="Field 'title' is mandatory.", groups=OnCreate.class)
+    @Size(max=63, message="Field 'title' must be less than 63 characters long.", groups={OnCreate.class, OnUpdate.class})
     private String title;
 
     @Column(name="synopsis", nullable=false, length=4095)
+    @NotBlank(message="Field 'synopsis' is mandatory.", groups=OnCreate.class)
+    @Size(max=4095, message="Field 'synopsis' must be less than 4095 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String synopsis;
 
     @Column(name="release_date", nullable=false)
     @Temporal(TemporalType.DATE) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE)
+    @jakarta.validation.constraints.NotNull(message="Field 'releaseDate' is mandatory.", groups=OnCreate.class)
     private Date releaseDate;
 
     @Column(name="created_at", nullable=false, updatable=false)
@@ -51,6 +69,7 @@ public class Game implements Serializable {
             joinColumns = @JoinColumn(name="game_id"),
             inverseJoinColumns = @JoinColumn(name="catego_id")
     )
+    @Size(min=1, message="Field 'gameCategories' must have at least one element in list.")
     private List<GameCategory> gameCategories;
 
     @ManyToMany
@@ -78,20 +97,30 @@ public class Game implements Serializable {
     // -- PUBLIC --
     public Game() {}
     public Game(@NotNull Game game) {
-        this.id = game.getId();
-        this.name = game.getName();
-        this.title = game.getTitle();
-        this.synopsis = game.getSynopsis();
-        this.releaseDate = game.getReleaseDate();
-        this.createdAt = game.getCreatedAt();
-        this.updatedAt = game.getUpdatedAt();
-        this.deletedAt = game.getDeletedAt();
+        id = game.getId();
+        name = game.getName();
+        title = game.getTitle();
+        synopsis = game.getSynopsis();
+        releaseDate = game.getReleaseDate();
+        createdAt = game.getCreatedAt();
+        updatedAt = game.getUpdatedAt();
+        deletedAt = game.getDeletedAt();
 
-        this.gameCategories = game.getGameCategories();
-        this.gameRatings = game.getGameRatings();
-        this.gameRatingDescriptors = game.getGameRatingDescriptors();
+        gameCategories = game.getGameCategories();
+        gameRatings = game.getGameRatings();
+        gameRatingDescriptors = game.getGameRatingDescriptors();
     }
     public Game(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+    }
+    public Game(
+            @NotNull Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate
+    ) {
+        this.id = id;
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
@@ -116,55 +145,49 @@ public class Game implements Serializable {
     }
 
     public void setGameCategories(List<GameCategory> gameCategories) {
-        if (gameCategories == null)
-            this.gameCategories = null;
-        else this.gameCategories = new ArrayList<>(gameCategories);
+        this.gameCategories = (gameCategories != null) ? new ArrayList<>(gameCategories) : null;
     }
     public void setGameRatings(List<GameRating> gameRatings) {
-        if (gameRatings == null)
-            this.gameRatings = null;
-        else this.gameRatings = new ArrayList<>(gameRatings);
+        this.gameRatings = (gameRatings != null) ? new ArrayList<>(gameRatings) : null;
     }
     public void setGameRatingDescriptors(List<GameRatingDescriptor> gameRatingDescriptors) {
-        if (gameRatingDescriptors == null)
-            this.gameRatingDescriptors = null;
-        else this.gameRatingDescriptors = new ArrayList<>(gameRatingDescriptors);
+        this.gameRatingDescriptors = (gameRatingDescriptors != null) ? new ArrayList<>(gameRatingDescriptors) : null;
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getTitle() {
-        return this.title;
+        return title;
     }
     public String getSynopsis() {
-        return this.synopsis;
+        return synopsis;
     }
     public Date getReleaseDate() {
         return releaseDate;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public List<GameCategory> getGameCategories() {
-        return (this.gameCategories == null) ? null : new ArrayList<>(this.gameCategories);
+        return (gameCategories == null) ? null : new ArrayList<>(gameCategories);
     }
     public List<GameRating> getGameRatings() {
-        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
+        return (gameRatings == null) ? null : new ArrayList<>(gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
+        return (gameRatingDescriptors == null) ? null : new ArrayList<>(gameRatingDescriptors);
     }
 
 }

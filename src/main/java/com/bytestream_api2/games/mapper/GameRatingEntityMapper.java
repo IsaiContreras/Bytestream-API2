@@ -16,10 +16,18 @@ public interface GameRatingEntityMapper {
     @Mapping(target = "gameRatings", ignore = true)
     @Mapping(target = "gameRatingDescriptors", ignore = true)
 
-    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "longName", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "location", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "description", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Named("toNullIfEmpty")
+    static String toNullIfEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? null : value;
+    }
+
+    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "longName", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "location", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "description", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            qualifiedByName= "toNullIfEmpty")
     void partialUpdateRatingEntity(@MappingTarget GameRatingEntity destiny, GameRatingEntity source);
 
 }

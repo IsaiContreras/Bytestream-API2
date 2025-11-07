@@ -1,6 +1,10 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameRatingEntity.OnUpdate;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,15 +25,27 @@ public class GameRatingEntity implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=15)
+    @NotBlank(message="Field 'name' is mandatory.", groups=OnCreate.class)
+    @Size(max=15, message="Field 'name' must be less than 15 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String name;
 
     @Column(name="long_name", nullable=false, length=127)
+    @NotBlank(message="Field 'longName' is mandatory.", groups=OnCreate.class)
+    @Size(max=127, message="Field 'longName' must be less than 127 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String longName;
 
     @Column(name="location", nullable=false, length=511)
+    @NotBlank(message="Field 'location' is mandatory.", groups=OnCreate.class)
+    @Size(max=511, message="Field 'location' must be less than 511 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String location;
 
     @Column(name="description", nullable=false, length=511)
+    @NotBlank(message="Field 'description' is mandatory.", groups=OnCreate.class)
+    @Size(max=511, message="Field 'description' must be less than 511 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)
@@ -59,17 +75,34 @@ public class GameRatingEntity implements Serializable {
     // -- PUBLIC --
     public GameRatingEntity() {}
     public GameRatingEntity(@NotNull GameRatingEntity gameRatingEntity) {
-        this.id = gameRatingEntity.getId();
-        this.name = gameRatingEntity.getName();
-        this.longName = gameRatingEntity.getLongName();
-        this.location = gameRatingEntity.getLocation();
-        this.description = gameRatingEntity.getDescription();
-        this.createdAt = gameRatingEntity.getCreatedAt();
-        this.updatedAt = gameRatingEntity.getUpdatedAt();
-        this.deletedAt = gameRatingEntity.getDeletedAt();
+        id = gameRatingEntity.getId();
+        name = gameRatingEntity.getName();
+        longName = gameRatingEntity.getLongName();
+        location = gameRatingEntity.getLocation();
+        description = gameRatingEntity.getDescription();
+        createdAt = gameRatingEntity.getCreatedAt();
+        updatedAt = gameRatingEntity.getUpdatedAt();
+        deletedAt = gameRatingEntity.getDeletedAt();
 
-        this.gameRatings = gameRatingEntity.getGameRatings();
-        this.gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
+        gameRatings = gameRatingEntity.getGameRatings();
+        gameRatingDescriptors = gameRatingEntity.getGameRatingDescriptors();
+    }
+    public GameRatingEntity(@NotNull String name) {
+        this.name = name;
+    }
+    public GameRatingEntity(@NotNull String name, @NotNull String longName) {
+        this.name = name;
+        this.longName = longName;
+    }
+    public GameRatingEntity(
+            @NotNull Short id, @NotNull String name, @NotNull String longName, @NotNull String location,
+            @NotNull String description
+    ) {
+        this.id = id;
+        this.name = name;
+        this.longName = longName;
+        this.location = location;
+        this.description = description;
     }
     public GameRatingEntity(
             @NotNull String name, @NotNull String longName, @NotNull String location, @NotNull String description
@@ -98,36 +131,36 @@ public class GameRatingEntity implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getLongName() {
-        return this.longName;
+        return longName;
     }
     public String getLocation() {
-        return this.location;
+        return location;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public List<GameRating> getGameRatings() {
-        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
+        return (gameRatings == null) ? null : new ArrayList<>(gameRatings);
     }
     public List<GameRatingDescriptor> getGameRatingDescriptors() {
-        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
+        return (gameRatingDescriptors == null) ? null : new ArrayList<>(gameRatingDescriptors);
     }
 
 }

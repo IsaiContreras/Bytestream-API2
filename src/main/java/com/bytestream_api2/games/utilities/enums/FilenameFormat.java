@@ -1,6 +1,6 @@
-package com.bytestream_api2.games.misc;
+package com.bytestream_api2.games.utilities.enums;
 
-import com.bytestream_api2.games.configuration.FilenameFormatConfigurer;
+import com.bytestream_api2.games.configuration.enums.FilenameFormatConfigurer;
 import org.jetbrains.annotations.NotNull;
 
 public enum FilenameFormat {
@@ -26,14 +26,14 @@ public enum FilenameFormat {
         this.path = path;
     }
 
-    public String getPath() { return this.path; }
+    public String getPath() { return path; }
 
     public void setValue(@NotNull FilenameFormatConfigurer configurer, @NotNull String value) {
         this.value = value;
     }
 
     public String getValue() {
-        return this.value;
+        return value;
     }
 
 }

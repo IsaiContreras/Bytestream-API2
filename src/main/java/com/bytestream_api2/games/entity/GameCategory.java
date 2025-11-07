@@ -1,6 +1,11 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.validation_groups.GameCategory.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnUpdate;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +26,13 @@ public class GameCategory implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
+    @NotBlank(message="Field 'name' is mandatory", groups=OnCreate.class)
+    @Size(max=31, message="Field 'name' must be less than 31 characters long.", groups={OnCreate.class, OnUpdate.class})
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^$|^[a-z0-9\\p{Punct}&&[^_]-]+(-[a-z0-9\\p{Punct}&&[^_]-]+)*$",
+            groups={OnCreate.class, OnUpdate.class}
+    )
     private String name;
 
     @Column(name="created_at", nullable=false, updatable=false)
@@ -43,13 +55,17 @@ public class GameCategory implements Serializable {
     // -- PUBLIC --
     public GameCategory() {}
     public GameCategory(@NotNull GameCategory gameCategory) {
-        this.id = gameCategory.getId();
-        this.name = gameCategory.getName();
-        this.createdAt = gameCategory.getCreatedAt();
-        this.updatedAt = gameCategory.getUpdatedAt();
-        this.deletedAt = gameCategory.getDeletedAt();
+        id = gameCategory.getId();
+        name = gameCategory.getName();
+        createdAt = gameCategory.getCreatedAt();
+        updatedAt = gameCategory.getUpdatedAt();
+        deletedAt = gameCategory.getDeletedAt();
     }
     public GameCategory(@NotNull String name) {
+        this.name = name;
+    }
+    public GameCategory(@NotNull Short id, @NotNull String name) {
+        this.id = id;
         this.name = name;
     }
 
@@ -62,20 +78,20 @@ public class GameCategory implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
 }

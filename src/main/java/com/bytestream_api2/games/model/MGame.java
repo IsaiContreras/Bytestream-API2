@@ -4,16 +4,16 @@ import com.bytestream_api2.games.entity.Game;
 import com.bytestream_api2.games.entity.GameCategory;
 import com.bytestream_api2.games.entity.GameRating;
 import com.bytestream_api2.games.entity.GameRatingDescriptor;
-import com.bytestream_api2.games.misc.GameArtType;
-import com.bytestream_api2.games.misc.ResourcePath;
-import com.bytestream_api2.games.misc.StaticResourcesPaths;
-import com.bytestream_api2.games.utilities.ResourcePathProvider;
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
+import com.bytestream_api2.games.utilities.enums.FilenameFormat;
+import com.bytestream_api2.games.utilities.enums.ResourcePath;
+import com.bytestream_api2.games.utilities.enums.StaticResourcesPaths;
+import com.bytestream_api2.games.utilities.statics.FilenameFormatter;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.*;
 
-public class MGame {
+public class MGame implements ImageContentEntity {
 
     // -- [[ ATTRIBUTES ]] --
 
@@ -26,7 +26,7 @@ public class MGame {
     private Date releaseDate;
 
     private String coverURI;
-    private String landsapeURI;
+    private String landscapeURI;
 
     private Date createdAt;
     private Date updatedAt;
@@ -47,50 +47,94 @@ public class MGame {
 
     public MGame() {}
     public MGame(@NotNull Game game, boolean recursive) {
-        this.id = game.getId();
-        this.title = game.getTitle();
-        this.name = game.getName();
-        this.synopsis = game.getSynopsis();
-        this.releaseDate = game.getReleaseDate();
+        id = game.getId();
+        title = game.getTitle();
+        name = game.getName();
+        synopsis = game.getSynopsis();
+        releaseDate = game.getReleaseDate();
 
-        this.createdAt = game.getCreatedAt();
-        this.updatedAt = game.getUpdatedAt();
-        this.deletedAt = game.getDeletedAt();
+        createdAt = game.getCreatedAt();
+        updatedAt = game.getUpdatedAt();
+        deletedAt = game.getDeletedAt();
 
         if (recursive) {
-            this.gameCategories = new ArrayList<>();
-            for (GameCategory itemGameCategory : game.getGameCategories())
-                this.gameCategories.add(new MGameCategory(itemGameCategory));
+            gameCategories = new ArrayList<>();
+            if (game.getGameCategories() != null)
+                for (GameCategory itemGameCategory : game.getGameCategories())
+                    gameCategories.add(new MGameCategory(itemGameCategory));
 
-            this.gameRatings = new ArrayList<>();
-            for (GameRating itemGameRating : game.getGameRatings())
-                this.gameRatings.add(new MGameRating(itemGameRating, false));
+            gameRatings = new ArrayList<>();
+            if (game.getGameRatings() != null)
+                for (GameRating itemGameRating : game.getGameRatings())
+                    gameRatings.add(new MGameRating(itemGameRating, false));
 
-            this.gameRatingDescriptors = new ArrayList<>();
-            for (GameRatingDescriptor itemGameRating : game.getGameRatingDescriptors())
-                this.gameRatingDescriptors.add(new MGameRatingDescriptor(itemGameRating, false));
+            gameRatingDescriptors = new ArrayList<>();
+            if (game.getGameRatingDescriptors() != null)
+                for (GameRatingDescriptor itemGameRating : game.getGameRatingDescriptors())
+                    gameRatingDescriptors.add(new MGameRatingDescriptor(itemGameRating, false));
         }
     }
     public MGame(@NotNull MGame game) {
-        this.id = game.getId();
-        this.name = game.getName();
-        this.title = game.getTitle();
-        this.synopsis = game.getSynopsis();
-        this.releaseDate = game.getReleaseDate();
+        id = game.getId();
+        name = game.getName();
+        title = game.getTitle();
+        synopsis = game.getSynopsis();
+        releaseDate = game.getReleaseDate();
 
-        this.createdAt = game.getCreatedAt();
-        this.updatedAt = game.getUpdatedAt();
-        this.deletedAt = game.getDeletedAt();
+        createdAt = game.getCreatedAt();
+        updatedAt = game.getUpdatedAt();
+        deletedAt = game.getDeletedAt();
 
-        this.gameCategories = game.getGameCategories();
-        this.gameRatings = game.getGameRatings();
-        this.gameRatingDescriptors = game.getGameRatingDescriptors();
+        gameCategories = game.getGameCategories();
+        gameRatings = game.getGameRatings();
+        gameRatingDescriptors = game.getGameRatingDescriptors();
     }
-    public MGame(@NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate) {
+    public MGame(Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+             @NotNull Date releaseDate
+    ) {
         this.name = name;
         this.title = title;
         this.synopsis = synopsis;
         this.releaseDate = releaseDate;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate, List<MGameCategory> categories
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis,
+            @NotNull Date releaseDate, List<MGameCategory> categories, List<MGameRating> ratings
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+        gameRatings = (ratings != null) ? new ArrayList<>(ratings) : null;
+    }
+    public MGame(
+            Long id, @NotNull String name, @NotNull String title, @NotNull String synopsis, @NotNull Date releaseDate,
+            List<MGameCategory> categories, List<MGameRating> ratings, List<MGameRatingDescriptor> descriptors
+    ) {
+        this.name = name;
+        this.title = title;
+        this.synopsis = synopsis;
+        this.releaseDate = releaseDate;
+        gameCategories = (categories != null) ? new ArrayList<>(categories) : null;
+        gameRatings = (ratings != null) ? new ArrayList<>(ratings) : null;
+        gameRatingDescriptors = (descriptors != null) ? new ArrayList<>(descriptors) : null;
     }
 
     public void setName(@NotNull String name) {
@@ -109,51 +153,103 @@ public class MGame {
     public void setCoverURI(String coverURI) {
         this.coverURI = coverURI;
     }
-    public void setLandsapeURI(String landsapeURI) {
-        this.landsapeURI = landsapeURI;
+    public void setLandscapeURI(String landscapeURI) {
+        this.landscapeURI = landscapeURI;
+    }
+
+    public void setGameCategories(List<MGameCategory> gameCategories) {
+        this.gameCategories = (gameCategories != null) ? new ArrayList<>(gameCategories) : null;
+    }
+    public void setGameRatings(List<MGameRating> gameRatings) {
+        this.gameRatings = (gameRatings != null) ? new ArrayList<>(gameRatings) : null;
+    }
+    public void setGameRatingDescriptors(List<MGameRatingDescriptor> gameRatingDescriptors) {
+        this.gameRatingDescriptors = (gameRatingDescriptors != null) ? new ArrayList<>(gameRatingDescriptors) : null;
+    }
+
+    @Override
+    public void setImageURIsFromFilenames(String[] filenames) {
+        if (filenames.length == 0)
+            return;
+
+        String coverFilename = Arrays.stream(filenames).filter(uri -> uri.contains("cover"))
+                .findFirst().orElse(null);
+        String landscapeFilename = Arrays.stream(filenames).filter(uri -> uri.contains("landscape"))
+                .findFirst().orElse(null);
+
+        if (coverFilename != null)
+            StaticResourcesPaths.GAME_ART.constructRelativeURI(
+                    new String[] {this.getName(), coverFilename}
+            );
+
+        if (landscapeFilename != null)
+            StaticResourcesPaths.GAME_ART.constructRelativeURI(
+                    new String[] {this.getName(), landscapeFilename}
+            );
     }
 
     public Long getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getTitle() {
-        return this.title;
+        return title;
     }
     public String getSynopsis() {
-        return this.synopsis;
+        return synopsis;
     }
     public Date getReleaseDate() {
-        return this.releaseDate;
+        return releaseDate;
     }
 
     public String getCoverURI() {
-        return this.coverURI;
+        return coverURI;
     }
-    public String getLandsapeURI() {
-        return this.landsapeURI;
+    public String getLandscapeURI() {
+        return landscapeURI;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public List<MGameCategory> getGameCategories() {
-        return (this.gameCategories == null) ? null : new ArrayList<>(this.gameCategories);
+        return (gameCategories == null) ? null : new ArrayList<>(gameCategories);
     }
     public List<MGameRating> getGameRatings() {
-        return (this.gameRatings == null) ? null : new ArrayList<>(this.gameRatings);
+        return (gameRatings == null) ? null : new ArrayList<>(gameRatings);
     }
     public List<MGameRatingDescriptor> getGameRatingDescriptors() {
-        return (this.gameRatingDescriptors == null) ? null : new ArrayList<>(this.gameRatingDescriptors);
+        return (gameRatingDescriptors == null) ? null : new ArrayList<>(gameRatingDescriptors);
+    }
+
+    @Override
+    public String getSubDirectory() {
+        return id != null ? id.toString() : "";
+    }
+    @Override
+    public ResourcePath getResourcePath() {
+        return ResourcePath.GAME_ART;
+    }
+
+    @Override
+    public String constructFilename(String extension, String[] addit) throws NullPointerException {
+        return FilenameFormatter.formatFilename(
+                FilenameFormat.GAME_ART_FORMAT,
+                new String[]{
+                        getId().toString().concat(getName()),
+                        Objects.requireNonNull(addit[0]),
+                        extension
+                }
+        );
     }
 
 }

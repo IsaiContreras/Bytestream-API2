@@ -1,16 +1,22 @@
 package com.bytestream_api2.games.controller;
 
 import com.bytestream_api2.games.entity.GameCategory;
-import com.bytestream_api2.games.model.MGameCategory;
+import com.bytestream_api2.games.exception.services.EntityNotFoundException;
 import com.bytestream_api2.games.service.GameCategoryService;
+import com.bytestream_api2.games.utilities.statics.BodyFormatter;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameCategory.OnUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/categories")
@@ -31,55 +37,107 @@ public class GameCategoryController {
     // -- PRIVATE --
 
     // -- PUBLIC --
+
     // CUD
     @PostMapping("/create")
-    public ResponseEntity<?> addNewGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
+    public ResponseEntity<Map<String, ?>> addNewGameCategory(
+            @Validated(OnCreate.class) @RequestBody GameCategory gameCategory
     ) {
-        return this.gameCategoryService.create(gameCategory);
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(BodyFormatter.result(
+                            gameCategoryService.create(gameCategory)
+                    ));
+        } catch (DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<?> updateGameCategory(
-            @RequestBody @Validated GameCategory gameCategory
+    public ResponseEntity<Map<String, ?>> updateGameCategory(
+            @Validated(OnUpdate.class) @RequestBody GameCategory gameCategory
     ) {
-        return this.gameCategoryService.update(gameCategory);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(gameCategoryService.update(gameCategory)));
+        } catch (EntityNotFoundException | DataAccessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteGameCategory(
+    public ResponseEntity<Map<String, ?>> deleteGameCategory(
             @RequestParam("id") short id
     ) {
-        return this.gameCategoryService.delete(id);
+        try {
+            gameCategoryService.delete(id);
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     @DeleteMapping("/harddelete")
-    public ResponseEntity<?> hardDeleteGameCategory(
+    public ResponseEntity<Map<String, ?>> hardDeleteGameCategory(
             @RequestParam("id") short id
     ) {
-        return gameCategoryService.hardDelete(id);
+        try {
+            gameCategoryService.hardDelete(id);
+            return ResponseEntity.status(HttpStatus.OK).body(BodyFormatter.result("Deleted successfully!"));
+        } catch (EmptyResultDataAccessException erdae) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(erdae.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.error(e.getMessage()));
+        }
     }
 
     // Queries
     @GetMapping("/get/byname")
-    public ResponseEntity<MGameCategory> getByName(
+    public ResponseEntity<Map<String, ?>> getByName(
             @RequestParam("name") String name
     ) {
-        return this.gameCategoryService.getByName(name);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(gameCategoryService.getByName(name)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(BodyFormatter.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get/bynamematch")
-    public ResponseEntity<?> getByNameContains(
+    public ResponseEntity<Map<String, ?>> getByNameContains(
             @RequestParam("name") String name, Pageable pageable
     ) {
-        return this.gameCategoryService.getByNameContains(name, pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(gameCategoryService.getByNameContains(name, pageable)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
     @GetMapping("/get")
-    public ResponseEntity<?> getAllCategories(
+    public ResponseEntity<Map<String, ?>> getAllCategories(
             Pageable pageable
     ) {
-        return this.gameCategoryService.getAll(pageable);
+        try {
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(BodyFormatter.result(gameCategoryService.getAll(pageable)));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(BodyFormatter.result(e.getMessage()));
+        }
     }
 
 }

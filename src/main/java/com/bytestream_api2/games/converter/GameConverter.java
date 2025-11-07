@@ -1,5 +1,6 @@
 package com.bytestream_api2.games.converter;
 
+import com.bytestream_api2.games.utilities.interfaces.ImageContentEntity;
 import org.springframework.stereotype.Component;
 
 import com.bytestream_api2.games.entity.Game;
@@ -27,6 +28,24 @@ public class GameConverter {
 
         for (Game gameItem : games)
             result.add(new MGame(gameItem, true));
+
+        return result;
+    }
+
+    public List<MGame> parseICEToEntity(List<ImageContentEntity> imageContentEntities) {
+        List<MGame> result = new ArrayList<>();
+
+        for (ImageContentEntity itemEntity : imageContentEntities)
+            result.add((MGame)itemEntity);
+
+        return result;
+    }
+
+    public List<ImageContentEntity> parseEntityToICE(List<MGame> games) {
+        List<ImageContentEntity> result = new ArrayList<>();
+
+        for (MGame itemGameRatingEntity : games)
+            result.add((ImageContentEntity)itemGameRatingEntity);
 
         return result;
     }

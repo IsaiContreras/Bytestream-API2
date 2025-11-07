@@ -27,42 +27,52 @@ public class MGameCategory {
     // -- PUBLIC --
     public MGameCategory() {}
     public MGameCategory(@NotNull GameCategory gameCategory) {
-        this.id = gameCategory.getId();
-        this.name = gameCategory.getName();
-        this.createdAt = gameCategory.getCreatedAt();
-        this.updatedAt = gameCategory.getUpdatedAt();
-        this.deletedAt = gameCategory.getDeletedAt();
+        id = gameCategory.getId();
+        name = gameCategory.getName();
+        createdAt = gameCategory.getCreatedAt();
+        updatedAt = gameCategory.getUpdatedAt();
+        deletedAt = gameCategory.getDeletedAt();
     }
     public MGameCategory(@NotNull MGameCategory gameCategory) {
-        this.id = gameCategory.getId();
-        this.name = gameCategory.getName();
-        this.createdAt = gameCategory.getCreatedAt();
-        this.updatedAt = gameCategory.getUpdatedAt();
-        this.deletedAt = gameCategory.getDeletedAt();
+        id = gameCategory.getId();
+        name = gameCategory.getName();
+        createdAt = gameCategory.getCreatedAt();
+        updatedAt = gameCategory.getUpdatedAt();
+        deletedAt = gameCategory.getDeletedAt();
+    }
+    public MGameCategory(@NotNull Short id, @NotNull String name) {
+        this.id = id;
+        this.name = name;
+    }
+    public MGameCategory(@NotNull Short id) {
+        this.id = id;
     }
     public MGameCategory(@NotNull String name) {
         this.name = name;
     }
 
-    public void setName(@NotNull String name) {
+    public void setId(Short id) {
+        this.id = id;
+    }
+    public void setName(String name) {
         this.name = name;
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
 }

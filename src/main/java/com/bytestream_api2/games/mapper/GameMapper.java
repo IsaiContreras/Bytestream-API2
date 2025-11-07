@@ -15,9 +15,15 @@ public interface GameMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
 
-    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "title", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
-    @Mapping(target = "synopsis", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
+    @Named("toNullIfEmpty")
+    static String toNullIfEmpty(String value) {
+        return (value == null || value.trim().isEmpty()) ? null : value;
+    }
+
+    @Mapping(target = "name", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "title", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, qualifiedByName="toNullIfEmpty")
+    @Mapping(target = "synopsis", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
+            qualifiedByName="toNullIfEmpty")
     @Mapping(target = "releaseDate", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     @Mapping(target = "gameCategories", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)
     @Mapping(target = "gameRatings", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS)

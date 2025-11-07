@@ -1,6 +1,12 @@
 package com.bytestream_api2.games.entity;
 
+import com.bytestream_api2.games.model.MGameRatingEntity;
+import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnCreate;
+import com.bytestream_api2.games.validation_groups.GameRatingDescriptor.OnUpdate;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.jetbrains.annotations.NotNull;
@@ -21,9 +27,19 @@ public class GameRatingDescriptor implements Serializable {
     private Short id;
 
     @Column(name="name", unique=true, nullable=false, length=31)
+    @NotBlank(message="Field 'name' is mandatory.", groups=OnCreate.class)
+    @Size(max=31, message="Field 'name' must be less than 31 characters long.", groups={OnCreate.class, OnUpdate.class})
+    @Pattern(
+            message= "Field 'name' must not contain spaces or uppercases and must be separated with '-'.",
+            regexp = "^$|^[a-z0-9\\p{Punct}&&[^_]-]+(-[a-z0-9\\p{Punct}&&[^_]-]+)*$",
+            groups={OnCreate.class, OnUpdate.class}
+    )
     private String name;
 
     @Column(name="description", nullable=false, length=1023)
+    @NotBlank(message="Field 'description' is mandatory.", groups=OnCreate.class)
+    @Size(max=1023, message="Field 'description' must be less than 1023 characters long.",
+            groups={OnCreate.class, OnUpdate.class})
     private String description;
 
     @Column(name="created_at", nullable = false, updatable=false)
@@ -51,28 +67,50 @@ public class GameRatingDescriptor implements Serializable {
     // -- PUBLIC --
     public GameRatingDescriptor() {}
     public GameRatingDescriptor(@NotNull GameRatingDescriptor gameRatingDescriptor) {
-        this.id = gameRatingDescriptor.getId();
-        this.name = gameRatingDescriptor.getName();
-        this.description = gameRatingDescriptor.getDescription();
-        this.createdAt = gameRatingDescriptor.getCreatedAt();
-        this.updatedAt = gameRatingDescriptor.getUpdatedAt();
-        this.deletedAt = gameRatingDescriptor.getDeletedAt();
+        id = gameRatingDescriptor.getId();
+        name = gameRatingDescriptor.getName();
+        description = gameRatingDescriptor.getDescription();
+        createdAt = gameRatingDescriptor.getCreatedAt();
+        updatedAt = gameRatingDescriptor.getUpdatedAt();
+        deletedAt = gameRatingDescriptor.getDeletedAt();
 
-        this.gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
+        gameRatingEntity = gameRatingDescriptor.getGameRatingEntity();
+    }
+    public GameRatingDescriptor(@NotNull Short id, @NotNull String name) {
+        this.id = id;
+        this.name = name;
+    }
+    public GameRatingDescriptor(@NotNull String name) {
+        this.name = name;
     }
     public GameRatingDescriptor(@NotNull String name, @NotNull String description) {
         this.name = name;
         this.description = description;
     }
+    public GameRatingDescriptor(
+            @NotNull Short id, @NotNull String name, @NotNull String description, String entityName
+    ) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
+    }
+    public GameRatingDescriptor(@NotNull String name, @NotNull String description, String entityName) {
+        this.name = name;
+        this.description = description;
+        if (entityName != null && !entityName.isEmpty())
+            gameRatingEntity = new GameRatingEntity(entityName);
+    }
 
-    public void setName(@NotNull String name) {
+    public void setName(String name) {
         this.name = name;
     }
-    public void setDescription(@NotNull String description) {
+    public void setDescription(String description) {
         this.description = description;
     }
-    public void setGameRatingEntity(@NotNull GameRatingEntity ratingEntity) {
-        this.gameRatingEntity = new GameRatingEntity(ratingEntity);
+    public void setGameRatingEntity(GameRatingEntity ratingEntity) {
+        this.gameRatingEntity = (ratingEntity != null) ? new GameRatingEntity(ratingEntity) : null;
     }
 
     public void setDeletedAt(Date deletedAt) {
@@ -80,27 +118,27 @@ public class GameRatingDescriptor implements Serializable {
     }
 
     public Short getId() {
-        return this.id;
+        return id;
     }
     public String getName() {
-        return this.name;
+        return name;
     }
     public String getDescription() {
-        return this.description;
+        return description;
     }
 
     public Date getCreatedAt() {
-        return this.createdAt;
+        return createdAt;
     }
     public Date getUpdatedAt() {
-        return this.updatedAt;
+        return updatedAt;
     }
     public Date getDeletedAt() {
-        return this.deletedAt;
+        return deletedAt;
     }
 
     public GameRatingEntity getGameRatingEntity() {
-        return this.gameRatingEntity;
+        return gameRatingEntity;
     }
 
 }

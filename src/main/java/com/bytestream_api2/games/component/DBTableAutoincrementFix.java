@@ -10,12 +10,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class DBTableAutoincrementFix {
 
+    // -- [[ ATTRIBUTES ]] --
+
+    // -- PRIVATE --
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // -- PUBLIC --
     // Class Components
     private static final Log logger = LogFactory.getLog(DBTableAutoincrementFix.class);
 
+    // -- [[ METHODS ]] --
+
+    // -- PRIVATE --
+
+    // -- PUBLIC --
     @PostConstruct
     public void setAutoIncrement() {
         try {
