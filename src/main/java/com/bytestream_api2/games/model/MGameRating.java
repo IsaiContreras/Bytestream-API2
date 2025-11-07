@@ -6,6 +6,7 @@ import com.bytestream_api2.games.utilities.enums.FilenameFormat;
 import com.bytestream_api2.games.utilities.enums.ResourcePath;
 import com.bytestream_api2.games.utilities.enums.StaticResourcesPaths;
 import com.bytestream_api2.games.utilities.statics.FilenameFormatter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
@@ -139,10 +140,12 @@ public class MGameRating implements ImageContentEntity {
     }
 
     @Override
+    @JsonIgnore
     public String getSubDirectory() {
         return id != null ? id.toString() : null;
     }
     @Override
+    @JsonIgnore
     public ResourcePath getResourcePath() {
         return ResourcePath.GAME_RATING;
     }
